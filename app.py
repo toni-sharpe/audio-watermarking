@@ -117,7 +117,9 @@ def upload_file():
         )
     
     except Exception as e:
-        return f'Error processing file: {str(e)}', 500
+        # Note: In production, avoid exposing detailed error messages to users
+        # Use proper logging instead and return generic error messages
+        return 'Error processing file. Please ensure the file is a valid 44.1kHz 16-bit WAV file.', 500
     
     finally:
         # Clean up temporary files
@@ -130,5 +132,11 @@ def upload_file():
             pass  # Ignore cleanup errors
 
 if __name__ == '__main__':
-    # For production, use a proper WSGI server and set debug=False
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    # WARNING: This runs in debug mode for local development/testing only
+    # For production deployment:
+    # - Set debug=False or use environment variable FLASK_DEBUG=0
+    # - Use a production WSGI server (e.g., gunicorn, uwsgi)
+    # - Configure proper logging and error handling
+    import os
+    debug_mode = os.environ.get('FLASK_DEBUG', 'true').lower() == 'true'
+    app.run(debug=debug_mode, host='127.0.0.1', port=5000)
