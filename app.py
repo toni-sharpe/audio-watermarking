@@ -3,8 +3,10 @@ import numpy as np
 import wave
 import io
 import os
+import tempfile
 
 app = Flask(__name__, static_folder='.')
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB max file size
 
 # dB values to amplitude conversion
 # Formula: amplitude = 10^(dB/20)
@@ -50,9 +52,16 @@ def add_watermark_samples(input_wav_path, output_wav_path):
     if n_channels == 2:
         watermark_samples = np.column_stack([watermark_samples, watermark_samples])
     
+    # Reshape audio data for proper concatenation
+    if n_channels == 2:
+        watermark_reshaped = watermark_samples.reshape(-1, n_channels)
+        audio_reshaped = audio_data.reshape(-1, n_channels)
+    else:
+        watermark_reshaped = watermark_samples.reshape(-1, 1)
+        audio_reshaped = audio_data.reshape(-1, 1)
+    
     # Prepend watermark samples to audio data
-    watermarked_data = np.vstack([watermark_samples.reshape(-1, n_channels) if n_channels == 2 else watermark_samples.reshape(-1, 1), 
-                                   audio_data.reshape(-1, n_channels) if n_channels == 2 else audio_data.reshape(-1, 1)])
+    watermarked_data = np.vstack([watermark_reshaped, audio_reshaped])
     
     # Write output WAV file
     with wave.open(output_wav_path, 'wb') as wav_out:
@@ -80,10 +89,14 @@ def upload_file():
     if not file.filename.lower().endswith('.wav'):
         return 'Only WAV files are supported', 400
     
+    # Create temporary files
+    input_fd, input_path = tempfile.mkstemp(suffix='.wav')
+    output_fd, output_path = tempfile.mkstemp(suffix='.wav')
+    
     try:
-        # Save uploaded file temporarily
-        input_path = '/tmp/input.wav'
-        output_path = '/tmp/output.wav'
+        # Close file descriptors and save uploaded file
+        os.close(input_fd)
+        os.close(output_fd)
         
         file.save(input_path)
         
@@ -93,10 +106,6 @@ def upload_file():
         # Read the processed file into memory
         with open(output_path, 'rb') as f:
             output_data = io.BytesIO(f.read())
-        
-        # Clean up temporary files
-        os.remove(input_path)
-        os.remove(output_path)
         
         # Send the processed file back
         output_data.seek(0)
@@ -109,6 +118,17 @@ def upload_file():
     
     except Exception as e:
         return f'Error processing file: {str(e)}', 500
+    
+    finally:
+        # Clean up temporary files
+        try:
+            if os.path.exists(input_path):
+                os.remove(input_path)
+            if os.path.exists(output_path):
+                os.remove(output_path)
+        except Exception:
+            pass  # Ignore cleanup errors
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # For production, use a proper WSGI server and set debug=False
+    app.run(debug=True, host='127.0.0.1', port=5000)

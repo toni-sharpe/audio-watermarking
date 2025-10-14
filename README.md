@@ -7,6 +7,7 @@ A simple web application for adding watermark samples to audio files.
 - Upload WAV audio files (44.1kHz, 16-bit)
 - Automatically adds 10 watermark samples at the beginning of the file
 - Downloads the processed audio file
+- Support for both mono and stereo audio files
 
 ## Requirements
 
@@ -41,7 +42,12 @@ A simple web application for adding watermark samples to audio files.
 The application adds 10 samples at the start of the audio file with the following amplitudes (in dB):
 - -90dB, -98dB, -95dB, -90dB, -92dB, -92dB, -94dB, -99dB, -92dB, -91dB
 
-These dB values are converted to 16-bit amplitude values and prepended to the audio data.
+These dB values are converted to 16-bit amplitude values using the formula:
+```
+amplitude = 10^(dB/20) × 32767
+```
+
+The watermark samples are prepended to the original audio data.
 
 ## Technical Details
 
@@ -49,3 +55,21 @@ These dB values are converted to 16-bit amplitude values and prepended to the au
 - **Audio Processing**: NumPy for array manipulation, wave module for WAV file handling
 - **Frontend**: Single HTML page with vanilla JavaScript
 - **File Format**: WAV (44.1kHz, 16-bit, mono or stereo)
+- **Max Upload Size**: 100 MB
+
+## Security Notes
+
+For production deployment:
+- Use a production WSGI server (e.g., Gunicorn, uWSGI) instead of Flask's development server
+- Set `debug=False` in the Flask app configuration
+- Configure appropriate file upload limits
+- Use HTTPS for secure file transfers
+- Implement authentication if needed
+
+## Example
+
+To test the application with a sample file:
+
+1. Create a test audio file (or use your own 44.1kHz 16-bit WAV file)
+2. Upload through the web interface
+3. The watermarked file will download automatically with prefix `watermarked_`
