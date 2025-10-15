@@ -73,3 +73,11 @@ To test the application with a sample file:
 1. Create a test audio file (or use your own 44.1kHz 16-bit WAV file)
 2. Upload through the web interface
 3. The watermarked file will download automatically with prefix `watermarked_`
+
+## Purpose
+
+This is an initial experimental repository looking at CoPilot and how to work closely with the ML tool to accelerate my develop throughout a more complex, holistic and useful product.
+
+## WIP
+
+There is more to come here, I'm expecting all PRs to be raised by CoPilot based on my prompts.
