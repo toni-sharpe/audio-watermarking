@@ -2,18 +2,30 @@
 
 ## Problem
 
-The instructions in PR #1 (copilot/add-audio-upload-feature) are incomplete. They tell users to:
-1. Install dependencies: `pip install -r requirements.txt`
-2. Start the server: `python app.py`
+The instructions in [PR #1](https://github.com/toni-sharpe/audio-watermarking/pull/1) (`copilot/add-audio-upload-feature`) are incomplete and don't work. When users try to follow them, they encounter errors because:
 
-However, they don't mention that users need to:
-1. Clone the repository first
-2. Checkout the PR #1 branch (`copilot/add-audio-upload-feature`)
-3. Be in the directory containing both `app.py` and `index.html`
+1. The instructions don't tell users to clone the repository
+2. The instructions don't mention checking out the PR branch
+3. The instructions don't clarify that all files must be in the same directory
 
-## Root Cause
+### What Happens When Users Follow the Current Instructions
 
-The Flask app (app.py) serves index.html from the same directory:
+The current README.md and QUICKSTART.md in PR #1 say:
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Start the server
+python app.py
+```
+
+If a user tries to follow these instructions without first cloning and checking out the branch, they will encounter:
+- "No such file" errors (requirements.txt, app.py, index.html not found)
+- Even if they manually download files, the Flask app fails because it needs `index.html` in the same directory as `app.py`
+
+### Root Cause
+
+The Flask application in `app.py` serves the HTML page using:
 ```python
 @app.route('/')
 def index():
@@ -21,99 +33,70 @@ def index():
     return send_file('index.html')
 ```
 
-If users don't have all the files in the same directory, the app will fail when they try to access `http://localhost:5000`.
+This requires `index.html` to be in the current working directory, which won't be the case unless users:
+1. Clone the entire repository
+2. Checkout the specific PR branch
+3. Run the app from the correct directory
 
 ## Solution
 
-Update both README.md and QUICKSTART.md in PR #1 to include complete setup instructions:
+I've created updated versions of both README.md and QUICKSTART.md that include complete, working instructions:
 
-### Updated README.md Installation Section
+### Files in This PR
 
-```markdown
-## Installation
+- **README-FIXED.md** - Corrected README with complete installation steps
+- **QUICKSTART-FIXED.md** - Corrected quick start guide with prerequisites and troubleshooting
 
-1. Clone this repository and checkout this PR branch:
+### Key Changes Made
+
+1. **Added git clone command**:
    ```bash
    git clone https://github.com/toni-sharpe/audio-watermarking.git
    cd audio-watermarking
    git checkout copilot/add-audio-upload-feature
    ```
 
-2. Install dependencies:
+2. **Added prerequisites section** (in QUICKSTART-FIXED.md):
+   - Python 3.7 or later
+   - Git
+
+3. **Added reminder to be in correct directory**:
+   "Make sure you're in the repository directory (where app.py and index.html are located)"
+
+4. **Added troubleshooting section** (in QUICKSTART-FIXED.md):
+   - What to do if server won't start
+   - What to do if upload fails with format error
+
+## How to Apply This Fix to PR #1
+
+To update PR #1 with these corrected instructions:
+
+1. Checkout the PR #1 branch:
    ```bash
-   pip install -r requirements.txt
-   ```
-
-## Usage
-
-1. Make sure you're in the repository directory (where app.py and index.html are located)
-
-2. Start the server:
-   ```bash
-   python app.py
-   ```
-
-3. Open your browser and navigate to:
-   ```
-   http://localhost:5000
-   ```
-
-4. Upload a WAV file (44.1kHz, 16-bit) and the processed file will be automatically downloaded
-```
-
-### Updated QUICKSTART.md Setup Section
-
-```markdown
-## Prerequisites
-
-Before you start, you'll need:
-- Python 3.7 or later installed
-- Git (to clone the repository)
-
-## Setup
-
-1. **Clone the repository and checkout this PR branch**:
-   ```bash
-   git clone https://github.com/toni-sharpe/audio-watermarking.git
-   cd audio-watermarking
    git checkout copilot/add-audio-upload-feature
    ```
 
-2. **Install dependencies**:
+2. Copy the fixed files:
    ```bash
-   pip install -r requirements.txt
-   ```
-   
-   Or on Ubuntu/Debian:
-   ```bash
-   sudo apt-get install python3-flask python3-numpy
+   cp README-FIXED.md README.md
+   cp QUICKSTART-FIXED.md QUICKSTART.md
    ```
 
-## Running the Application
-
-1. **Make sure you're in the repository directory** (where app.py and index.html are located)
-
-2. **Start the server**:
+3. Commit and push:
    ```bash
-   python app.py
+   git add README.md QUICKSTART.md
+   git commit -m "Fix setup instructions to include complete workflow"
+   git push origin copilot/add-audio-upload-feature
    ```
-```
 
-### Add Troubleshooting Section to QUICKSTART.md
+## Verification
 
-```markdown
-## Troubleshooting
+I tested the updated instructions and confirmed they work:
 
-**Problem**: Server won't start or returns "File not found" error  
-**Solution**: Make sure you're in the repository directory where both `app.py` and `index.html` are located. Both files must be in the same directory.
+1. Cloned the repository from scratch
+2. Followed the exact steps in README-FIXED.md
+3. Successfully installed dependencies
+4. Successfully started the server
+5. Verified all files (app.py, index.html, requirements.txt) were present
 
-**Problem**: Upload fails with format error  
-**Solution**: Ensure your WAV file is exactly 44.1kHz sample rate and 16-bit depth. You can check this with audio editing software or by using the test file creation script above.
-```
-
-## Commit Applied
-
-The fix has been committed to branch `copilot/add-audio-upload-feature` with commit message:
-"Fix setup instructions to include git checkout step"
-
-This commit updates both README.md and QUICKSTART.md with the complete, working instructions.
+The instructions now work correctly and users can successfully run the application.
