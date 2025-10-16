@@ -83,13 +83,13 @@ amplitude = 10^(dB/20) × 32767
 Where 32767 is the maximum value for a signed 16-bit integer.
 
 **For each dB value:**
-- **-90dB** → 10^(-90/20) × 32767 = 10^(-4.5) × 32767 ≈ **1.03** → `int()` truncates to **1**
-- **-91dB** → 10^(-91/20) × 32767 = 10^(-4.55) × 32767 ≈ **0.92** → `int()` truncates to **0**
-- **-92dB** → 10^(-92/20) × 32767 = 10^(-4.6) × 32767 ≈ **0.82** → `int()` truncates to **0**
-- **-94dB** → 10^(-94/20) × 32767 = 10^(-4.7) × 32767 ≈ **0.65** → `int()` truncates to **0**
-- **-95dB** → 10^(-95/20) × 32767 = 10^(-4.75) × 32767 ≈ **0.58** → `int()` truncates to **0**
-- **-98dB** → 10^(-98/20) × 32767 = 10^(-4.9) × 32767 ≈ **0.41** → `int()` truncates to **0**
-- **-99dB** → 10^(-99/20) × 32767 = 10^(-4.95) × 32767 ≈ **0.37** → `int()` truncates to **0**
+- **-90dB** → 10^(-90/20) × 32767 = 10^(-4.5) × 32767 ≈ **1.0362** → `int()` truncates to **1**
+- **-91dB** → 10^(-91/20) × 32767 = 10^(-4.55) × 32767 ≈ **0.9235** → `int()` truncates to **0**
+- **-92dB** → 10^(-92/20) × 32767 = 10^(-4.6) × 32767 ≈ **0.8231** → `int()` truncates to **0**
+- **-94dB** → 10^(-94/20) × 32767 = 10^(-4.7) × 32767 ≈ **0.6538** → `int()` truncates to **0**
+- **-95dB** → 10^(-95/20) × 32767 = 10^(-4.75) × 32767 ≈ **0.5827** → `int()` truncates to **0**
+- **-98dB** → 10^(-98/20) × 32767 = 10^(-4.9) × 32767 ≈ **0.4125** → `int()` truncates to **0**
+- **-99dB** → 10^(-99/20) × 32767 = 10^(-4.95) × 32767 ≈ **0.3677** → `int()` truncates to **0**
 
 **The key insight:** When you convert these very low dB values and use Python's `int()` function (which truncates toward zero), you get values that are either 0 or 1. These extremely small amplitude values are imperceptible in the audio but serve as a digital watermark.
 
