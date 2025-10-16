@@ -21,6 +21,15 @@
         h1 {
             color: #333;
             text-align: center;
+            margin-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+            font-size: 18px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4CAF50;
         }
         .upload-form {
             margin-top: 30px;
@@ -54,6 +63,12 @@
         }
         button:hover {
             background-color: #45a049;
+        }
+        button.remove-btn {
+            background-color: #f44336;
+        }
+        button.remove-btn:hover {
+            background-color: #da190b;
         }
         button:disabled {
             background-color: #cccccc;
@@ -100,6 +115,7 @@
             <p>• Supported formats: WAV</p>
         </div>
 
+        <h2>Add Watermark</h2>
         <form class="upload-form" id="uploadForm" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="audioFile">Select Audio File:</label>
@@ -109,6 +125,17 @@
         </form>
 
         <div class="message" id="message"></div>
+
+        <h2>Remove Watermark</h2>
+        <form class="upload-form" id="removeForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="audioFileRemove">Select Watermarked Audio File:</label>
+                <input type="file" id="audioFileRemove" name="audio" accept=".wav" required>
+            </div>
+            <button type="submit" id="removeBtn" class="remove-btn">Remove Watermark</button>
+        </form>
+
+        <div class="message" id="removeMessage"></div>
     </div>
 
     <script>
@@ -120,7 +147,7 @@
             const messageDiv = document.getElementById('message');
             
             if (!fileInput.files[0]) {
-                showMessage('Please select a file', 'error');
+                showMessage('Please select a file', 'error', messageDiv);
                 return;
             }
             
@@ -148,24 +175,72 @@
                     window.URL.revokeObjectURL(url);
                     document.body.removeChild(a);
                     
-                    showMessage('Audio file processed successfully! Download started.', 'success');
+                    showMessage('Audio file processed successfully! Download started.', 'success', messageDiv);
                 } else {
                     const error = await response.text();
-                    showMessage('Error: ' + error, 'error');
+                    showMessage('Error: ' + error, 'error', messageDiv);
                 }
             } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
+                showMessage('Error: ' + error.message, 'error', messageDiv);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Upload and Process';
             }
         });
         
-        function showMessage(text, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = text;
-            messageDiv.className = 'message ' + type;
-            messageDiv.style.display = 'block';
+        document.getElementById('removeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('audioFileRemove');
+            const removeBtn = document.getElementById('removeBtn');
+            const messageDiv = document.getElementById('removeMessage');
+            
+            if (!fileInput.files[0]) {
+                showMessage('Please select a file', 'error', messageDiv);
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('audio', fileInput.files[0]);
+            
+            removeBtn.disabled = true;
+            removeBtn.textContent = 'Processing...';
+            messageDiv.style.display = 'none';
+            
+            try {
+                const response = await fetch('/remove', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'unwatermarked_' + fileInput.files[0].name;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showMessage('Watermark removed successfully! Download started.', 'success', messageDiv);
+                } else {
+                    const error = await response.text();
+                    showMessage('Error: ' + error, 'error', messageDiv);
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error', messageDiv);
+            } finally {
+                removeBtn.disabled = false;
+                removeBtn.textContent = 'Remove Watermark';
+            }
+        });
+        
+        function showMessage(text, type, targetDiv) {
+            targetDiv.textContent = text;
+            targetDiv.className = 'message ' + type;
+            targetDiv.style.display = 'block';
         }
     </script>
 </body>
