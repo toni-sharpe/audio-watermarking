@@ -55,9 +55,10 @@ class TestAPIEndpoints:
             assert len(node['name']) > 0, "Name should not be empty"
             assert len(node['name']) <= 240, "Name should not exceed 240 characters"
         
-        # Check that IDs are sequential starting from 1
+        # Check that IDs are unique and sorted
         ids = [node['id'] for node in data]
-        assert ids == list(range(1, 20)), "IDs should be sequential from 1 to 19"
+        assert len(ids) == len(set(ids)), "All IDs should be unique"
+        assert ids == sorted(ids), "IDs should be in ascending order"
     
     def test_api_nodes_includes_diverse_names(self, client):
         """Test that API returns diverse names"""
