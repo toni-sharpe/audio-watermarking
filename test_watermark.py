@@ -3,6 +3,7 @@ import numpy as np
 import wave
 import tempfile
 import os
+import app
 from app import add_watermark_samples, remove_watermark_samples, DB_VALUES
 
 
@@ -181,6 +182,9 @@ class TestWatermarkFunctions:
     
     def test_add_remove_add_different_watermark(self):
         """Test adding, removing, and adding a different watermark"""
+        # Store original values
+        original_db_values = app.DB_VALUES.copy()
+        
         with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as input_file:
             input_path = input_file.name
             
@@ -211,12 +215,8 @@ class TestWatermarkFunctions:
                 # Verify watermark was removed
                 assert len(unwatermarked_data) == 1000, "After removal, should have original length"
                 
-                # Step 3: Modify DB_VALUES to create a different watermark pattern
-                # Store original values
-                import app
-                original_db_values = app.DB_VALUES.copy()
-                
-                # Create a different pattern
+                # Step 3: Create a different pattern and add it
+                # Modify DB_VALUES to create a different watermark pattern
                 app.DB_VALUES = [-99, -90, -99, -90, -90, -90, -99, -90, -99, -90, -99, -90, -90, -99, -90, -99]
                 
                 # Add second (different) watermark
@@ -234,10 +234,7 @@ class TestWatermarkFunctions:
                 assert not np.array_equal(watermarked1_data[:16], watermarked2_data[:16]), \
                     "First and second watermarks should be different"
                 
-                # Restore original DB_VALUES
-                app.DB_VALUES = original_db_values
-                
-                # Clean up
+                # Clean up temporary files
                 if os.path.exists(watermarked1_path):
                     os.remove(watermarked1_path)
                 if os.path.exists(unwatermarked_path):
@@ -246,6 +243,9 @@ class TestWatermarkFunctions:
                     os.remove(watermarked2_path)
                 
             finally:
+                # Restore original DB_VALUES
+                app.DB_VALUES = original_db_values
+                
                 # Clean up
                 if os.path.exists(input_path):
                     os.remove(input_path)

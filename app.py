@@ -13,6 +13,7 @@ app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB max file size
 # For 16-bit audio, we scale by 32767 (max value for signed 16-bit)
 # Pattern represents binary 0s and 1s: 0 = -99dB (low), 1 = -90dB (high)
 DB_VALUES = [-90, -99, -90, -90, -99, -99, -90, -99, -90, -99, -90, -90, -99, -90, -99, -99]
+WATERMARK_SAMPLES = 16  # Number of samples in the watermark pattern
 
 def db_to_amplitude(db, bit_depth=16):
     """Convert dB to amplitude value for the given bit depth"""
@@ -96,15 +97,11 @@ def remove_watermark_samples(input_wav_path, output_wav_path):
             audio_data = audio_data.reshape(-1, 2)
     
     # Remove first 16 samples (watermark)
-    WATERMARK_SAMPLES = 16
     if len(audio_data) < WATERMARK_SAMPLES:
         raise ValueError(f"Audio file must have at least {WATERMARK_SAMPLES} samples to remove watermark")
     
     # Remove watermark samples from the beginning
-    if n_channels == 2:
-        unwatermarked_data = audio_data[WATERMARK_SAMPLES:]
-    else:
-        unwatermarked_data = audio_data[WATERMARK_SAMPLES:].reshape(-1, 1)
+    unwatermarked_data = audio_data[WATERMARK_SAMPLES:]
     
     # Write output WAV file
     with wave.open(output_wav_path, 'wb') as wav_out:
