@@ -11,7 +11,9 @@ app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB max file size
 # dB values to amplitude conversion
 # Formula: amplitude = 10^(dB/20)
 # For 16-bit audio, we scale by 32767 (max value for signed 16-bit)
-DB_VALUES = [-90, -98, -95, -90, -92, -92, -94, -99, -92, -91]
+# Pattern represents binary 0s and 1s: 0 = -99dB (low), 1 = -90dB (high)
+DB_VALUES = [-90, -99, -90, -90, -99, -99, -90, -99, -90, -99, -90, -90, -99, -90, -99, -99]
+WATERMARK_SAMPLES = 16  # Number of samples in the watermark pattern
 
 def db_to_amplitude(db, bit_depth=16):
     """Convert dB to amplitude value for the given bit depth"""
@@ -22,7 +24,7 @@ def db_to_amplitude(db, bit_depth=16):
     return amplitude
 
 def add_watermark_samples(input_wav_path, output_wav_path):
-    """Add 10 watermark samples at the beginning of the audio file"""
+    """Add 16 watermark samples at the beginning of the audio file"""
     # Read the input WAV file
     with wave.open(input_wav_path, 'rb') as wav_in:
         # Get WAV parameters
@@ -69,6 +71,44 @@ def add_watermark_samples(input_wav_path, output_wav_path):
         wav_out.setsampwidth(sample_width)
         wav_out.setframerate(frame_rate)
         wav_out.writeframes(watermarked_data.astype(np.int16).tobytes())
+
+def remove_watermark_samples(input_wav_path, output_wav_path):
+    """Remove the first 16 watermark samples from the beginning of the audio file"""
+    # Read the input WAV file
+    with wave.open(input_wav_path, 'rb') as wav_in:
+        # Get WAV parameters
+        n_channels = wav_in.getnchannels()
+        sample_width = wav_in.getsampwidth()
+        frame_rate = wav_in.getframerate()
+        n_frames = wav_in.getnframes()
+        
+        # Validate parameters
+        if frame_rate != 44100:
+            raise ValueError(f"Sample rate must be 44.1kHz (44100 Hz), got {frame_rate} Hz")
+        if sample_width != 2:
+            raise ValueError(f"Sample width must be 2 bytes (16-bit), got {sample_width} bytes")
+        
+        # Read all frames
+        frames = wav_in.readframes(n_frames)
+        audio_data = np.frombuffer(frames, dtype=np.int16)
+        
+        # Reshape if stereo
+        if n_channels == 2:
+            audio_data = audio_data.reshape(-1, 2)
+    
+    # Remove first 16 samples (watermark)
+    if len(audio_data) < WATERMARK_SAMPLES:
+        raise ValueError(f"Audio file must have at least {WATERMARK_SAMPLES} samples to remove watermark")
+    
+    # Remove watermark samples from the beginning
+    unwatermarked_data = audio_data[WATERMARK_SAMPLES:]
+    
+    # Write output WAV file
+    with wave.open(output_wav_path, 'wb') as wav_out:
+        wav_out.setnchannels(n_channels)
+        wav_out.setsampwidth(sample_width)
+        wav_out.setframerate(frame_rate)
+        wav_out.writeframes(unwatermarked_data.astype(np.int16).tobytes())
 
 @app.route('/')
 def index():
@@ -120,6 +160,62 @@ def upload_file():
         # Note: In production, avoid exposing detailed error messages to users
         # Use proper logging instead and return generic error messages
         return 'Error processing file. Please ensure the file is a valid 44.1kHz 16-bit WAV file.', 500
+    
+    finally:
+        # Clean up temporary files
+        try:
+            if os.path.exists(input_path):
+                os.remove(input_path)
+            if os.path.exists(output_path):
+                os.remove(output_path)
+        except Exception:
+            pass  # Ignore cleanup errors
+
+@app.route('/remove', methods=['POST'])
+def remove_watermark():
+    """Handle audio file upload and watermark removal"""
+    if 'audio' not in request.files:
+        return 'No audio file provided', 400
+    
+    file = request.files['audio']
+    
+    if file.filename == '':
+        return 'No file selected', 400
+    
+    if not file.filename.lower().endswith('.wav'):
+        return 'Only WAV files are supported', 400
+    
+    # Create temporary files
+    input_fd, input_path = tempfile.mkstemp(suffix='.wav')
+    output_fd, output_path = tempfile.mkstemp(suffix='.wav')
+    
+    try:
+        # Close file descriptors and save uploaded file
+        os.close(input_fd)
+        os.close(output_fd)
+        
+        file.save(input_path)
+        
+        # Process the audio file
+        remove_watermark_samples(input_path, output_path)
+        
+        # Read the processed file into memory
+        with open(output_path, 'rb') as f:
+            output_data = io.BytesIO(f.read())
+        
+        # Send the processed file back
+        output_data.seek(0)
+        return send_file(
+            output_data,
+            mimetype='audio/wav',
+            as_attachment=True,
+            download_name=f'unwatermarked_{file.filename}'
+        )
+    
+    except Exception as e:
+        # Note: In production, avoid exposing detailed error messages to users
+        # Use proper logging instead and return generic error messages
+        return 'Error processing file. Please ensure the file is a valid 44.1kHz 16-bit WAV file with at least 16 samples.', 500
     
     finally:
         # Clean up temporary files
