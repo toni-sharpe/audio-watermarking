@@ -147,6 +147,5 @@ if __name__ == '__main__':
     # - Set debug=False or use environment variable FLASK_DEBUG=0
     # - Use a production WSGI server (e.g., gunicorn, uwsgi)
     # - Configure proper logging and error handling
-    import os
     debug_mode = os.environ.get('FLASK_DEBUG', 'true').lower() == 'true'
     app.run(debug=debug_mode, host='127.0.0.1', port=5000)
