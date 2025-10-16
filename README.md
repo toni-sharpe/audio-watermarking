@@ -5,7 +5,7 @@ A simple web application for adding watermark samples to audio files.
 ## Features
 
 - Upload WAV audio files (44.1kHz, 16-bit)
-- Automatically adds 10 watermark samples at the beginning of the file
+- Automatically adds 16 watermark samples at the beginning of the file
 - Downloads the processed audio file
 - Support for both mono and stereo audio files
 
@@ -39,8 +39,9 @@ A simple web application for adding watermark samples to audio files.
 
 ## How it Works
 
-The application adds 10 samples at the start of the audio file with the following amplitudes (in dB):
-- -90dB, -98dB, -95dB, -90dB, -92dB, -92dB, -94dB, -99dB, -92dB, -91dB
+The application adds 16 samples at the start of the audio file with amplitudes representing a binary pattern using two dB levels:
+- **0 (low)**: -99dB
+- **1 (high)**: -90dB
 
 These dB values are converted to 16-bit amplitude values using the formula:
 ```
