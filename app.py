@@ -11,7 +11,8 @@ app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB max file size
 # dB values to amplitude conversion
 # Formula: amplitude = 10^(dB/20)
 # For 16-bit audio, we scale by 32767 (max value for signed 16-bit)
-DB_VALUES = [-90, -98, -95, -90, -92, -92, -94, -99, -92, -91]
+# Pattern represents binary 0s and 1s: 0 = -99dB (low), 1 = -90dB (high)
+DB_VALUES = [-90, -99, -90, -90, -99, -99, -90, -99, -90, -99, -90, -90, -99, -90, -99, -99]
 
 def db_to_amplitude(db, bit_depth=16):
     """Convert dB to amplitude value for the given bit depth"""
@@ -22,7 +23,7 @@ def db_to_amplitude(db, bit_depth=16):
     return amplitude
 
 def add_watermark_samples(input_wav_path, output_wav_path):
-    """Add 10 watermark samples at the beginning of the audio file"""
+    """Add 16 watermark samples at the beginning of the audio file"""
     # Read the input WAV file
     with wave.open(input_wav_path, 'rb') as wav_in:
         # Get WAV parameters
