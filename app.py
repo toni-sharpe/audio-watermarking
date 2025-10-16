@@ -71,6 +71,48 @@ def add_watermark_samples(input_wav_path, output_wav_path):
         wav_out.setframerate(frame_rate)
         wav_out.writeframes(watermarked_data.astype(np.int16).tobytes())
 
+def remove_watermark_samples(input_wav_path, output_wav_path):
+    """Remove the first 16 watermark samples from the beginning of the audio file"""
+    # Read the input WAV file
+    with wave.open(input_wav_path, 'rb') as wav_in:
+        # Get WAV parameters
+        n_channels = wav_in.getnchannels()
+        sample_width = wav_in.getsampwidth()
+        frame_rate = wav_in.getframerate()
+        n_frames = wav_in.getnframes()
+        
+        # Validate parameters
+        if frame_rate != 44100:
+            raise ValueError(f"Sample rate must be 44.1kHz (44100 Hz), got {frame_rate} Hz")
+        if sample_width != 2:
+            raise ValueError(f"Sample width must be 2 bytes (16-bit), got {sample_width} bytes")
+        
+        # Read all frames
+        frames = wav_in.readframes(n_frames)
+        audio_data = np.frombuffer(frames, dtype=np.int16)
+        
+        # Reshape if stereo
+        if n_channels == 2:
+            audio_data = audio_data.reshape(-1, 2)
+    
+    # Remove first 16 samples (watermark)
+    WATERMARK_SAMPLES = 16
+    if len(audio_data) < WATERMARK_SAMPLES:
+        raise ValueError(f"Audio file must have at least {WATERMARK_SAMPLES} samples to remove watermark")
+    
+    # Remove watermark samples from the beginning
+    if n_channels == 2:
+        unwatermarked_data = audio_data[WATERMARK_SAMPLES:]
+    else:
+        unwatermarked_data = audio_data[WATERMARK_SAMPLES:].reshape(-1, 1)
+    
+    # Write output WAV file
+    with wave.open(output_wav_path, 'wb') as wav_out:
+        wav_out.setnchannels(n_channels)
+        wav_out.setsampwidth(sample_width)
+        wav_out.setframerate(frame_rate)
+        wav_out.writeframes(unwatermarked_data.astype(np.int16).tobytes())
+
 @app.route('/')
 def index():
     """Serve the HTML page"""
