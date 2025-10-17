@@ -4,6 +4,7 @@ import wave
 import io
 import os
 import tempfile
+from db_config import get_db_connection, release_db_connection
 
 app = Flask(__name__, static_folder='.')
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB max file size
@@ -114,6 +115,35 @@ def remove_watermark_samples(input_wav_path, output_wav_path):
 def index():
     """Serve the HTML page"""
     return send_file('index.html')
+
+@app.route('/artists')
+def artists():
+    """Serve the artists HTML page"""
+    return send_file('artists.html')
+
+@app.route('/api/nodes')
+def get_nodes():
+    """API endpoint to retrieve all nodes from the database"""
+    conn = None
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Query all nodes
+        cur.execute("SELECT id, name FROM node ORDER BY id;")
+        rows = cur.fetchall()
+        
+        # Format results as JSON
+        nodes = [{'id': row[0], 'name': row[1]} for row in rows]
+        
+        cur.close()
+        return jsonify(nodes)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if conn:
+            release_db_connection(conn)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():

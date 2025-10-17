@@ -1,0 +1,139 @@
+import pytest
+from db_config import get_db_connection, release_db_connection
+
+
+class TestDatabaseFunctions:
+    """Test suite for database functions"""
+    
+    def test_database_connection(self):
+        """Test that we can connect to the database"""
+        conn = None
+        try:
+            conn = get_db_connection()
+            assert conn is not None, "Connection should not be None"
+            
+            # Test that we can execute a query
+            cur = conn.cursor()
+            cur.execute("SELECT 1;")
+            result = cur.fetchone()
+            assert result[0] == 1, "Query should return 1"
+            cur.close()
+        finally:
+            if conn:
+                release_db_connection(conn)
+    
+    def test_node_table_exists(self):
+        """Test that the node table exists with correct structure"""
+        conn = None
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            # Check if table exists
+            cur.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'node'
+                );
+            """)
+            exists = cur.fetchone()[0]
+            assert exists, "Node table should exist"
+            
+            # Check columns
+            cur.execute("""
+                SELECT column_name, data_type, character_maximum_length
+                FROM information_schema.columns
+                WHERE table_name = 'node'
+                ORDER BY ordinal_position;
+            """)
+            columns = cur.fetchall()
+            
+            assert len(columns) == 2, "Should have 2 columns"
+            assert columns[0][0] == 'id', "First column should be 'id'"
+            assert columns[0][1] == 'integer', "id should be integer"
+            assert columns[1][0] == 'name', "Second column should be 'name'"
+            assert columns[1][1] == 'character varying', "name should be varchar"
+            assert columns[1][2] == 240, "name should be varchar(240)"
+            
+            cur.close()
+        finally:
+            if conn:
+                release_db_connection(conn)
+    
+    def test_node_indexes(self):
+        """Test that the node table has the required indexes"""
+        conn = None
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            # Check indexes
+            cur.execute("""
+                SELECT indexname, indexdef
+                FROM pg_indexes
+                WHERE tablename = 'node'
+                ORDER BY indexname;
+            """)
+            indexes = cur.fetchall()
+            
+            # Should have at least 2 indexes: primary key and name index
+            assert len(indexes) >= 2, "Should have at least 2 indexes"
+            
+            index_names = [idx[0] for idx in indexes]
+            assert 'node_pkey' in index_names, "Should have primary key index"
+            assert 'idx_node_name' in index_names, "Should have name index"
+            
+            cur.close()
+        finally:
+            if conn:
+                release_db_connection(conn)
+    
+    def test_node_data(self):
+        """Test that the node table has 19 records"""
+        conn = None
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            # Check record count
+            cur.execute("SELECT COUNT(*) FROM node;")
+            count = cur.fetchone()[0]
+            assert count == 19, f"Should have 19 records, found {count}"
+            
+            # Check that all records have valid data
+            cur.execute("SELECT id, name FROM node ORDER BY id;")
+            rows = cur.fetchall()
+            
+            for row in rows:
+                assert row[0] > 0, "ID should be positive"
+                assert row[1] is not None, "Name should not be None"
+                assert len(row[1]) > 0, "Name should not be empty"
+                assert len(row[1]) <= 240, "Name should not exceed 240 characters"
+            
+            cur.close()
+        finally:
+            if conn:
+                release_db_connection(conn)
+    
+    def test_node_data_diversity(self):
+        """Test that the node data contains diverse names"""
+        conn = None
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            # Get all names
+            cur.execute("SELECT name FROM node;")
+            names = [row[0] for row in cur.fetchall()]
+            
+            # Check for some expected names from different cultures
+            assert 'Amara Okafor' in names, "Should contain Nigerian name"
+            assert 'Chen Wei' in names, "Should contain Chinese name"
+            assert 'Priya Sharma' in names, "Should contain Indian name"
+            assert 'Mohammed Al-Rashid' in names, "Should contain Saudi Arabian name"
+            assert 'Yuki Tanaka' in names, "Should contain Japanese name"
+            
+            cur.close()
+        finally:
+            if conn:
+                release_db_connection(conn)
