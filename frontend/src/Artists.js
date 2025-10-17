@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import './Artists.css';
+import './Artists.scss';
 
 function Artists() {
     const [artists, setArtists] = useState([]);

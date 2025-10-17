@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import './Home.css';
+import { Link } from 'react-router-dom';
+import './Home.scss';
 
 function Home() {
     const [uploadMessage, setUploadMessage] = useState({ text: '', type: '' });
@@ -108,6 +109,12 @@ function Home() {
     return (
         <div className="container">
             <h1>Audio Watermarking Tool</h1>
+            
+            <div className="nav" style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <Link to="/artists" style={{ color: '#4CAF50', textDecoration: 'none', fontSize: '14px' }}>
+                    View Artists Database →
+                </Link>
+            </div>
             
             <div className="info">
                 <p><strong>Requirements:</strong></p>
