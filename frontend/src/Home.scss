@@ -1,0 +1,97 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+.container {
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+h1 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 10px;
+}
+h2 {
+    color: #555;
+    font-size: 18px;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #4CAF50;
+}
+.upload-form {
+    margin-top: 30px;
+}
+.form-group {
+    margin-bottom: 20px;
+}
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: bold;
+}
+input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+button:hover {
+    background-color: #45a049;
+}
+button.remove-btn {
+    background-color: #f44336;
+}
+button.remove-btn:hover {
+    background-color: #da190b;
+}
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+.message {
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: 4px;
+    display: none;
+}
+.message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+.message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+.info {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #e7f3ff;
+    border-left: 4px solid #2196F3;
+    border-radius: 4px;
+}
+.info p {
+    margin: 5px 0;
+    color: #555;
+    font-size: 14px;
+}

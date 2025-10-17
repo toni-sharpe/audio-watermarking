@@ -1,0 +1,78 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+.container {
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+h1 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 30px;
+}
+.nav {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.nav a {
+    color: #4CAF50;
+    text-decoration: none;
+    font-size: 14px;
+}
+.nav a:hover {
+    text-decoration: underline;
+}
+.loading {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+}
+.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid #f5c6cb;
+    margin-bottom: 20px;
+}
+.artists-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.artist-item {
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    border-left: 4px solid #4CAF50;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.artist-item:hover {
+    background-color: #f0f0f0;
+}
+.artist-id {
+    font-weight: bold;
+    color: #666;
+    min-width: 40px;
+}
+.artist-name {
+    flex-grow: 1;
+    margin-left: 15px;
+    color: #333;
+    font-size: 16px;
+}
+.count {
+    text-align: center;
+    margin-top: 20px;
+    color: #666;
+    font-size: 14px;
+}
