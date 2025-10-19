@@ -191,7 +191,9 @@ def get_artists():
         return jsonify(artists)
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        # Log the error for debugging (in production, use proper logging)
+        # Don't expose detailed error messages to users
+        return jsonify({'error': 'Failed to retrieve artists'}), 500
     finally:
         if conn:
             release_db_connection(conn)
