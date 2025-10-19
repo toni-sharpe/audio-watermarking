@@ -1,4 +1,5 @@
 from flask import Flask, request, send_file, jsonify
+from flask_cors import CORS
 import numpy as np
 import wave
 import io
@@ -8,6 +9,9 @@ from db_config import get_db_connection, release_db_connection
 
 app = Flask(__name__, static_folder='.')
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB max file size
+
+# Enable CORS for the React frontend running on port 3000
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 # dB values to amplitude conversion
 # Formula: amplitude = 10^(dB/20)
