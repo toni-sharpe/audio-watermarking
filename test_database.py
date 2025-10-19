@@ -165,8 +165,8 @@ class TestDatabaseFunctions:
             columns = cur.fetchall()
             
             assert len(columns) == 1, "Should have 1 column"
-            assert columns[0][0] == 'artistid', "First column should be 'artistid'"
-            assert columns[0][1] == 'integer', "artistid should be integer"
+            assert columns[0][0] == 'artistId', "First column should be 'artistId'"
+            assert columns[0][1] == 'integer', "artistId should be integer"
             
             cur.close()
         finally:
@@ -213,7 +213,7 @@ class TestDatabaseFunctions:
             assert count == 19, f"Should have 19 records, found {count}"
             
             # Check that all artistIds are from 1 to 19
-            cur.execute("SELECT artistId FROM artist ORDER BY artistId;")
+            cur.execute("SELECT \"artistId\" FROM artist ORDER BY \"artistId\";")
             artist_ids = [row[0] for row in cur.fetchall()]
             expected_ids = list(range(1, 20))
             assert artist_ids == expected_ids, f"Artist IDs should be 1-19, got {artist_ids}"
@@ -232,10 +232,10 @@ class TestDatabaseFunctions:
             
             # Check that all artist IDs have corresponding node IDs
             cur.execute("""
-                SELECT a.artistId, n.id 
+                SELECT a."artistId", n.id 
                 FROM artist a
-                LEFT JOIN node n ON a.artistId = n.id
-                ORDER BY a.artistId;
+                LEFT JOIN node n ON a."artistId" = n.id
+                ORDER BY a."artistId";
             """)
             rows = cur.fetchall()
             
