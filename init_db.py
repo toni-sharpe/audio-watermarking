@@ -35,6 +35,16 @@ def init_database():
             );
         """)
         
+        print("Creating collective table...")
+        
+        # Create collective table with indexed collectiveId column
+        # Note: PRIMARY KEY automatically creates an index
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS collective (
+                "collectiveId" INTEGER PRIMARY KEY
+            );
+        """)
+        
         # Check if table already has data
         cur.execute("SELECT COUNT(*) FROM node;")
         count = cur.fetchone()[0]
@@ -88,6 +98,21 @@ def init_database():
         else:
             print(f"Artist table already contains {artist_count} records. Skipping data insertion.")
         
+        # Check if collective table already has data
+        cur.execute("SELECT COUNT(*) FROM collective;")
+        collective_count = cur.fetchone()[0]
+        
+        if collective_count == 0:
+            print("Adding 19 collective records...")
+            
+            # Insert collectiveId values from 1 to 19 to match node and artist IDs
+            for collective_id in range(1, 20):
+                cur.execute("INSERT INTO collective (\"collectiveId\") VALUES (%s);", (collective_id,))
+            
+            print(f"Successfully added 19 collective records to the database.")
+        else:
+            print(f"Collective table already contains {collective_count} records. Skipping data insertion.")
+        
         # Commit the transaction
         conn.commit()
         print("Database initialization completed successfully!")
@@ -105,6 +130,13 @@ def init_database():
         print("\nCurrent artists in database:")
         for row in artist_rows:
             print(f"  Artist ID: {row[0]}")
+        
+        # Display collective data
+        cur.execute("SELECT \"collectiveId\" FROM collective ORDER BY \"collectiveId\";")
+        collective_rows = cur.fetchall()
+        print("\nCurrent collectives in database:")
+        for row in collective_rows:
+            print(f"  Collective ID: {row[0]}")
         
         cur.close()
         

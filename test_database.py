@@ -249,3 +249,115 @@ class TestDatabaseFunctions:
         finally:
             if conn:
                 release_db_connection(conn)
+    
+    def test_collective_table_exists(self):
+        """Test that the collective table exists with correct structure"""
+        conn = None
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            # Check if table exists
+            cur.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'collective'
+                );
+            """)
+            exists = cur.fetchone()[0]
+            assert exists, "Collective table should exist"
+            
+            # Check columns
+            cur.execute("""
+                SELECT column_name, data_type
+                FROM information_schema.columns
+                WHERE table_name = 'collective'
+                ORDER BY ordinal_position;
+            """)
+            columns = cur.fetchall()
+            
+            assert len(columns) == 1, "Should have 1 column"
+            assert columns[0][0] == 'collectiveId', "First column should be 'collectiveId'"
+            assert columns[0][1] == 'integer', "collectiveId should be integer"
+            
+            cur.close()
+        finally:
+            if conn:
+                release_db_connection(conn)
+    
+    def test_collective_indexes(self):
+        """Test that the collective table has the required indexes"""
+        conn = None
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            # Check indexes
+            cur.execute("""
+                SELECT indexname, indexdef
+                FROM pg_indexes
+                WHERE tablename = 'collective'
+                ORDER BY indexname;
+            """)
+            indexes = cur.fetchall()
+            
+            # Should have at least 1 index: primary key (which automatically creates an index)
+            assert len(indexes) >= 1, "Should have at least 1 index"
+            
+            index_names = [idx[0] for idx in indexes]
+            assert 'collective_pkey' in index_names, "Should have primary key index"
+            
+            cur.close()
+        finally:
+            if conn:
+                release_db_connection(conn)
+    
+    def test_collective_data(self):
+        """Test that the collective table has 19 records matching node IDs"""
+        conn = None
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            # Check record count
+            cur.execute("SELECT COUNT(*) FROM collective;")
+            count = cur.fetchone()[0]
+            assert count == 19, f"Should have 19 records, found {count}"
+            
+            # Check that all collectiveIds are from 1 to 19
+            cur.execute("SELECT \"collectiveId\" FROM collective ORDER BY \"collectiveId\";")
+            collective_ids = [row[0] for row in cur.fetchall()]
+            expected_ids = list(range(1, 20))
+            assert collective_ids == expected_ids, f"Collective IDs should be 1-19, got {collective_ids}"
+            
+            cur.close()
+        finally:
+            if conn:
+                release_db_connection(conn)
+    
+    def test_collective_node_relationship(self):
+        """Test that collective IDs match node IDs"""
+        conn = None
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            # Check that all collective IDs have corresponding node IDs
+            cur.execute("""
+                SELECT c."collectiveId", n.id 
+                FROM collective c
+                LEFT JOIN node n ON c."collectiveId" = n.id
+                ORDER BY c."collectiveId";
+            """)
+            rows = cur.fetchall()
+            
+            # All 19 records should have matching node IDs
+            assert len(rows) == 19, "Should have 19 matching records"
+            
+            for row in rows:
+                assert row[0] == row[1], f"Collective ID {row[0]} should match Node ID {row[1]}"
+            
+            cur.close()
+        finally:
+            if conn:
+                release_db_connection(conn)
