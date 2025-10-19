@@ -11,7 +11,12 @@ app = Flask(__name__, static_folder='.')
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB max file size
 
 # Enable CORS for the React frontend running on port 3000
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+# Only allow CORS on API endpoints that need cross-origin access
+CORS(app, resources={
+    r"/upload": {"origins": "http://localhost:3000"},
+    r"/remove": {"origins": "http://localhost:3000"},
+    r"/api/*": {"origins": "http://localhost:3000"}
+})
 
 # dB values to amplitude conversion
 # Formula: amplitude = 10^(dB/20)
