@@ -337,6 +337,6 @@ class TestCollectiveManagement:
                 assert 'collective' in artist, "Artist should have collective field"
                 assert 'collectiveId' in artist, "Artist should have collectiveId field"
             
-            # Check that at least one artist has a collective
+            # All artists should have collectives (including the one that is alone)
             artists_with_collective = [a for a in data if a['collective'] is not None]
-            assert len(artists_with_collective) >= 18, "At least 18 artists should have collectives"
+            assert len(artists_with_collective) == 19, f"All 19 artists should have collectives, found {len(artists_with_collective)}"

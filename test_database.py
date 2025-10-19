@@ -95,10 +95,10 @@ class TestDatabaseFunctions:
             conn = get_db_connection()
             cur = conn.cursor()
             
-            # Check record count for artists
-            cur.execute("SELECT COUNT(*) FROM node WHERE \"nodeType\" = 'artist' OR id <= 19;")
+            # Check record count for artists specifically
+            cur.execute("SELECT COUNT(*) FROM node WHERE \"nodeType\" = 'artist';")
             count = cur.fetchone()[0]
-            assert count >= 19, f"Should have at least 19 records, found {count}"
+            assert count >= 19, f"Should have at least 19 artist records, found {count}"
             
             # Check that all records have valid data
             cur.execute("SELECT id, name FROM node ORDER BY id;")
