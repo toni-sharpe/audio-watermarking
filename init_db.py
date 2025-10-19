@@ -28,15 +28,11 @@ def init_database():
         print("Creating artist table...")
         
         # Create artist table with indexed artistId column
+        # Note: PRIMARY KEY automatically creates an index
         cur.execute("""
             CREATE TABLE IF NOT EXISTS artist (
                 artistId INTEGER PRIMARY KEY
             );
-        """)
-        
-        # Create index on artistId field
-        cur.execute("""
-            CREATE INDEX IF NOT EXISTS idx_artist_artistId ON artist(artistId);
         """)
         
         # Check if table already has data

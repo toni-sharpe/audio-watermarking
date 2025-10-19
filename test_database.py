@@ -189,12 +189,11 @@ class TestDatabaseFunctions:
             """)
             indexes = cur.fetchall()
             
-            # Should have at least 2 indexes: primary key and artistId index
-            assert len(indexes) >= 2, "Should have at least 2 indexes"
+            # Should have at least 1 index: primary key (which automatically creates an index)
+            assert len(indexes) >= 1, "Should have at least 1 index"
             
             index_names = [idx[0] for idx in indexes]
             assert 'artist_pkey' in index_names, "Should have primary key index"
-            assert 'idx_artist_artistid' in index_names, "Should have artistId index"
             
             cur.close()
         finally:
