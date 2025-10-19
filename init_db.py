@@ -31,7 +31,7 @@ def init_database():
         # Note: PRIMARY KEY automatically creates an index
         cur.execute("""
             CREATE TABLE IF NOT EXISTS artist (
-                artistId INTEGER PRIMARY KEY
+                "artistId" INTEGER PRIMARY KEY
             );
         """)
         
@@ -82,7 +82,7 @@ def init_database():
             
             # Insert artistId values from 1 to 19 to match node IDs
             for artist_id in range(1, 20):
-                cur.execute("INSERT INTO artist (artistId) VALUES (%s);", (artist_id,))
+                cur.execute("INSERT INTO artist (\"artistId\") VALUES (%s);", (artist_id,))
             
             print(f"Successfully added 19 artist records to the database.")
         else:
@@ -100,7 +100,7 @@ def init_database():
             print(f"  ID: {row[0]}, Name: {row[1]}")
         
         # Display artist data
-        cur.execute("SELECT artistId FROM artist ORDER BY artistId;")
+        cur.execute("SELECT \"artistId\" FROM artist ORDER BY \"artistId\";")
         artist_rows = cur.fetchall()
         print("\nCurrent artists in database:")
         for row in artist_rows:
