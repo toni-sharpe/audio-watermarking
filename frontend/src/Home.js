@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Home.scss';
-import API_BASE_URL from './config';
+import { API_BASE_URL } from './config';
 
 function Home() {
     const [uploadMessage, setUploadMessage] = useState({ text: '', type: '' });
