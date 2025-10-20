@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Artists.scss';
+import API_BASE_URL from './config';
 
 function Artists() {
     const [artists, setArtists] = useState([]);
@@ -13,7 +14,7 @@ function Artists() {
 
     const fetchArtists = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/nodes');
+            const response = await fetch(`${API_BASE_URL}/api/nodes`);
             
             if (!response.ok) {
                 throw new Error('Failed to fetch artists');

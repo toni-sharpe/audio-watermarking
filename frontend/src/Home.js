@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Home.scss';
+import API_BASE_URL from './config';
 
 function Home() {
     const [uploadMessage, setUploadMessage] = useState({ text: '', type: '' });
@@ -25,7 +26,7 @@ function Home() {
         setUploadMessage({ text: '', type: '' });
         
         try {
-            const response = await fetch('http://localhost:5000/upload', {
+            const response = await fetch(`${API_BASE_URL}/upload`, {
                 method: 'POST',
                 body: formData
             });
@@ -74,7 +75,7 @@ function Home() {
         setRemoveMessage({ text: '', type: '' });
         
         try {
-            const response = await fetch('http://localhost:5000/remove', {
+            const response = await fetch(`${API_BASE_URL}/remove`, {
                 method: 'POST',
                 body: formData
             });
