@@ -13,7 +13,7 @@ function Artists() {
 
     const fetchArtists = async () => {
         try {
-            const response = await fetch('/api/nodes');
+            const response = await fetch('http://localhost:5000/api/nodes');
             
             if (!response.ok) {
                 throw new Error('Failed to fetch artists');

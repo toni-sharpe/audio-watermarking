@@ -25,7 +25,7 @@ function Home() {
         setUploadMessage({ text: '', type: '' });
         
         try {
-            const response = await fetch('/upload', {
+            const response = await fetch('http://localhost:5000/upload', {
                 method: 'POST',
                 body: formData
             });
@@ -74,7 +74,7 @@ function Home() {
         setRemoveMessage({ text: '', type: '' });
         
         try {
-            const response = await fetch('/remove', {
+            const response = await fetch('http://localhost:5000/remove', {
                 method: 'POST',
                 body: formData
             });
