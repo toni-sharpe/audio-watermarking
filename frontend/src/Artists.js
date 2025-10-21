@@ -51,6 +51,11 @@ function Artists() {
                                 <li key={artist.id} className="artist-item">
                                     <span className="artist-id">#{artist.id}</span>
                                     <span className="artist-name">{artist.name}</span>
+                                    {artist.collective && (
+                                        <span className="artist-collective">
+                                            {artist.collective}
+                                        </span>
+                                    )}
                                 </li>
                             ))
                         )}

@@ -77,6 +77,15 @@
             color: #333;
             font-size: 16px;
         }
+        .artist-collective {
+            color: #666;
+            font-size: 14px;
+            font-style: italic;
+            padding: 4px 12px;
+            background-color: #e8f5e9;
+            border-radius: 12px;
+            border: 1px solid #a5d6a7;
+        }
         .count {
             text-align: center;
             margin-top: 20px;
@@ -114,7 +123,7 @@
             const countDiv = document.getElementById('count');
 
             try {
-                const response = await fetch('/api/nodes');
+                const response = await fetch('/api/artists');
                 
                 if (!response.ok) {
                     throw new Error('Failed to fetch artists');
@@ -134,9 +143,16 @@
                 artists.forEach(artist => {
                     const li = document.createElement('li');
                     li.className = 'artist-item';
+                    
+                    let collectiveHtml = '';
+                    if (artist.collective) {
+                        collectiveHtml = `<span class="artist-collective">${artist.collective}</span>`;
+                    }
+                    
                     li.innerHTML = `
                         <span class="artist-id">#${artist.id}</span>
                         <span class="artist-name">${artist.name}</span>
+                        ${collectiveHtml}
                     `;
                     artistsList.appendChild(li);
                 });
