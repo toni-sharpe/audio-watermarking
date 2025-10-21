@@ -155,6 +155,49 @@ def get_nodes():
         if conn:
             release_db_connection(conn)
 
+@app.route('/api/artists')
+def get_artists():
+    """API endpoint to retrieve all artists with their collective information"""
+    conn = None
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Query artists with their collective information
+        cur.execute("""
+            SELECT 
+                n.id, 
+                n.name,
+                c.name as collective_name,
+                ac."collectiveId"
+            FROM node n
+            JOIN artist a ON n.id = a."artistId"
+            LEFT JOIN "ArtistCollective" ac ON a."artistId" = ac."artistId"
+            LEFT JOIN node c ON ac."collectiveId" = c.id
+            WHERE n."nodeType" = 'artist'
+            ORDER BY n.id;
+        """)
+        rows = cur.fetchall()
+        
+        # Format results as JSON
+        artists = [{
+            'id': row[0], 
+            'name': row[1],
+            'collective': row[2],
+            'collectiveId': row[3]
+        } for row in rows]
+        
+        cur.close()
+        return jsonify(artists)
+        
+    except Exception as e:
+        # Log the error for debugging (in production, use proper logging)
+        # Don't expose detailed error messages to users
+        return jsonify({'error': 'Failed to retrieve artists'}), 500
+    finally:
+        if conn:
+            release_db_connection(conn)
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     """Handle audio file upload and watermarking"""

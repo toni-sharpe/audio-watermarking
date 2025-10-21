@@ -13,7 +13,7 @@ function Artists() {
 
     const fetchArtists = async () => {
         try {
-            const response = await fetch('/api/nodes');
+            const response = await fetch('/api/artists');
             
             if (!response.ok) {
                 throw new Error('Failed to fetch artists');
@@ -50,6 +50,11 @@ function Artists() {
                                 <li key={artist.id} className="artist-item">
                                     <span className="artist-id">#{artist.id}</span>
                                     <span className="artist-name">{artist.name}</span>
+                                    {artist.collective && (
+                                        <span className="artist-collective">
+                                            {artist.collective}
+                                        </span>
+                                    )}
                                 </li>
                             ))
                         )}
