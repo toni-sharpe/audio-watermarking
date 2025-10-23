@@ -58,7 +58,6 @@ function Home() {
                     text: 'Audio file processed successfully! Download started.', 
                     type: 'success' 
                 });
-                fileInput.value = '';
             } else {
                 const error = await response.text();
                 setUploadMessage({ text: 'Error: ' + error, type: 'error' });
@@ -108,7 +107,6 @@ function Home() {
                     text: 'Watermark removed successfully! Download started.', 
                     type: 'success' 
                 });
-                fileInput.value = '';
             } else {
                 const error = await response.text();
                 setRemoveMessage({ text: 'Error: ' + error, type: 'error' });
