@@ -9,6 +9,17 @@ function Home() {
     const [uploadLoading, setUploadLoading] = useState(false);
     const [removeLoading, setRemoveLoading] = useState(false);
 
+    const getFilenameFromResponse = (response) => {
+        const contentDisposition = response.headers.get('Content-Disposition');
+        if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+            if (filenameMatch && filenameMatch[1]) {
+                return filenameMatch[1];
+            }
+        }
+        return null;
+    };
+
     const handleUploadSubmit = async (e) => {
         e.preventDefault();
         
@@ -33,10 +44,11 @@ function Home() {
             
             if (response.ok) {
                 const blob = await response.blob();
+                const filename = getFilenameFromResponse(response) || 'watermarked_' + fileInput.files[0].name;
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'watermarked_' + fileInput.files[0].name;
+                a.download = filename;
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -82,10 +94,11 @@ function Home() {
             
             if (response.ok) {
                 const blob = await response.blob();
+                const filename = getFilenameFromResponse(response) || 'unwatermarked_' + fileInput.files[0].name;
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'unwatermarked_' + fileInput.files[0].name;
+                a.download = filename;
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
