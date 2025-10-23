@@ -43,23 +43,23 @@ def migrate_database():
         conn.commit()
         print("✓ Collective table created")
         
-        # Task 3: Add nodeType column to node table
-        print("\nTask 3: Adding nodeType column to node table...")
+        # Task 3: Add nodeType column to Node table
+        print("\nTask 3: Adding nodeType column to Node table...")
         # Check if column already exists
         cur.execute("""
             SELECT column_name 
             FROM information_schema.columns 
-            WHERE table_name = 'node' AND column_name = 'nodeType';
+            WHERE table_name = 'Node' AND column_name = 'nodeType';
         """)
         if cur.fetchone() is None:
             cur.execute("""
-                ALTER TABLE node 
+                ALTER TABLE "Node" 
                 ADD COLUMN "nodeType" VARCHAR(32);
             """)
             
             # Set existing 19 artists to "artist"
             cur.execute("""
-                UPDATE node 
+                UPDATE "Node" 
                 SET "nodeType" = 'artist' 
                 WHERE id <= 19;
             """)
@@ -68,12 +68,12 @@ def migrate_database():
         else:
             print("✓ nodeType column already exists")
         
-        # Task 4: Add 5 collectives to node table
-        print("\nTask 4: Adding 5 collectives to node table...")
+        # Task 4: Add 5 collectives to Node table
+        print("\nTask 4: Adding 5 collectives to Node table...")
         
         # Check if collectives already exist
         cur.execute("""
-            SELECT COUNT(*) FROM node WHERE "nodeType" = 'collective';
+            SELECT COUNT(*) FROM "Node" WHERE "nodeType" = 'collective';
         """)
         collective_count = cur.fetchone()[0]
         
@@ -89,21 +89,21 @@ def migrate_database():
             
             for name in collective_names:
                 cur.execute("""
-                    INSERT INTO node (name, "nodeType") 
+                    INSERT INTO "Node" (name, "nodeType") 
                     VALUES (%s, 'collective');
                 """, (name,))
             
             conn.commit()
-            print(f"✓ Added {len(collective_names)} collectives to node table")
+            print(f"✓ Added {len(collective_names)} collectives to Node table")
         else:
             print(f"✓ {collective_count} collectives already exist")
         
         # Task 5: Add collectives to Collective table
         print("\nTask 5: Adding collectives to Collective table...")
         
-        # Get collective IDs from node table
+        # Get collective IDs from Node table
         cur.execute("""
-            SELECT id FROM node WHERE "nodeType" = 'collective' ORDER BY id;
+            SELECT id FROM "Node" WHERE "nodeType" = 'collective' ORDER BY id;
         """)
         collective_ids = [row[0] for row in cur.fetchall()]
         
@@ -175,7 +175,7 @@ def migrate_database():
         print("="*60)
         
         # Show all nodes with their types
-        cur.execute('SELECT id, name, "nodeType" FROM node ORDER BY id;')
+        cur.execute('SELECT id, name, "nodeType" FROM "Node" ORDER BY id;')
         nodes = cur.fetchall()
         print(f"\nTotal nodes: {len(nodes)}")
         print("\nArtists:")
@@ -193,8 +193,8 @@ def migrate_database():
         cur.execute("""
             SELECT ac."artistId", n1.name, ac."collectiveId", n2.name
             FROM "ArtistCollective" ac
-            JOIN node n1 ON ac."artistId" = n1.id
-            JOIN node n2 ON ac."collectiveId" = n2.id
+            JOIN "Node" n1 ON ac."artistId" = n1.id
+            JOIN "Node" n2 ON ac."collectiveId" = n2.id
             ORDER BY ac."collectiveId", ac."artistId";
         """)
         assignments = cur.fetchall()
@@ -210,7 +210,7 @@ def migrate_database():
         cur.execute("""
             SELECT c."collectiveId", n.name
             FROM "Collective" c
-            JOIN node n ON c."collectiveId" = n.id
+            JOIN "Node" n ON c."collectiveId" = n.id
             WHERE c."collectiveId" NOT IN (
                 SELECT DISTINCT "collectiveId" FROM "ArtistCollective"
             );

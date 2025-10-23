@@ -135,7 +135,7 @@ class TestCollectiveManagement:
                 release_db_connection(conn)
     
     def test_node_type_column_exists(self):
-        """Test that the node table has nodeType column"""
+        """Test that the Node table has nodeType column"""
         conn = None
         try:
             conn = get_db_connection()
@@ -145,7 +145,7 @@ class TestCollectiveManagement:
             cur.execute("""
                 SELECT column_name, data_type, character_maximum_length
                 FROM information_schema.columns
-                WHERE table_name = 'node' AND column_name = 'nodeType';
+                WHERE table_name = 'Node' AND column_name = 'nodeType';
             """)
             column = cur.fetchone()
             
@@ -168,7 +168,7 @@ class TestCollectiveManagement:
             # Check that first 19 records are artists
             cur.execute("""
                 SELECT COUNT(*) 
-                FROM node 
+                FROM "Node" 
                 WHERE id <= 19 AND "nodeType" = 'artist';
             """)
             count = cur.fetchone()[0]
@@ -180,7 +180,7 @@ class TestCollectiveManagement:
                 release_db_connection(conn)
     
     def test_collectives_in_node_table(self):
-        """Test that 5 collectives were added to node table"""
+        """Test that 5 collectives were added to Node table"""
         conn = None
         try:
             conn = get_db_connection()
@@ -189,7 +189,7 @@ class TestCollectiveManagement:
             # Check collective count
             cur.execute("""
                 SELECT COUNT(*) 
-                FROM node 
+                FROM "Node" 
                 WHERE "nodeType" = 'collective';
             """)
             count = cur.fetchone()[0]
@@ -198,7 +198,7 @@ class TestCollectiveManagement:
             # Check that they have valid names
             cur.execute("""
                 SELECT id, name 
-                FROM node 
+                FROM "Node" 
                 WHERE "nodeType" = 'collective'
                 ORDER BY id;
             """)
@@ -226,11 +226,11 @@ class TestCollectiveManagement:
             count = cur.fetchone()[0]
             assert count == 5, f"Should have 5 collectives, found {count}"
             
-            # Check that collective IDs match node IDs
+            # Check that collective IDs match Node IDs
             cur.execute("""
                 SELECT c."collectiveId", n.id
                 FROM "Collective" c
-                JOIN node n ON c."collectiveId" = n.id
+                JOIN "Node" n ON c."collectiveId" = n.id
                 WHERE n."nodeType" = 'collective'
                 ORDER BY c."collectiveId";
             """)

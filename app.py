@@ -182,7 +182,7 @@ def get_nodes():
         cur = conn.cursor()
         
         # Query all nodes
-        cur.execute("SELECT id, name FROM node ORDER BY id;")
+        cur.execute("SELECT id, name FROM \"Node\" ORDER BY id;")
         rows = cur.fetchall()
         
         # Format results as JSON
@@ -212,10 +212,10 @@ def get_artists():
                 n.name,
                 c.name as collective_name,
                 ac."collectiveId"
-            FROM node n
-            JOIN artist a ON n.id = a."artistId"
+            FROM "Node" n
+            JOIN "Artist" a ON n.id = a."artistId"
             LEFT JOIN "ArtistCollective" ac ON a."artistId" = ac."artistId"
-            LEFT JOIN node c ON ac."collectiveId" = c.id
+            LEFT JOIN "Node" c ON ac."collectiveId" = c.id
             WHERE n."nodeType" = 'artist'
             ORDER BY n.id;
         """)

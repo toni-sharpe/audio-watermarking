@@ -23,7 +23,7 @@ class TestDatabaseFunctions:
                 release_db_connection(conn)
     
     def test_node_table_exists(self):
-        """Test that the node table exists with correct structure"""
+        """Test that the Node table exists with correct structure"""
         conn = None
         try:
             conn = get_db_connection()
@@ -33,7 +33,7 @@ class TestDatabaseFunctions:
             cur.execute("""
                 SELECT EXISTS (
                     SELECT FROM information_schema.tables 
-                    WHERE table_name = 'node'
+                    WHERE table_name = 'Node'
                 );
             """)
             exists = cur.fetchone()[0]
@@ -43,7 +43,7 @@ class TestDatabaseFunctions:
             cur.execute("""
                 SELECT column_name, data_type, character_maximum_length
                 FROM information_schema.columns
-                WHERE table_name = 'node'
+                WHERE table_name = 'Node'
                 ORDER BY ordinal_position;
             """)
             columns = cur.fetchall()
@@ -61,7 +61,7 @@ class TestDatabaseFunctions:
                 release_db_connection(conn)
     
     def test_node_indexes(self):
-        """Test that the node table has the required indexes"""
+        """Test that the Node table has the required indexes"""
         conn = None
         try:
             conn = get_db_connection()
@@ -71,7 +71,7 @@ class TestDatabaseFunctions:
             cur.execute("""
                 SELECT indexname, indexdef
                 FROM pg_indexes
-                WHERE tablename = 'node'
+                WHERE tablename = 'Node'
                 ORDER BY indexname;
             """)
             indexes = cur.fetchall()
@@ -80,7 +80,7 @@ class TestDatabaseFunctions:
             assert len(indexes) >= 2, "Should have at least 2 indexes"
             
             index_names = [idx[0] for idx in indexes]
-            assert 'node_pkey' in index_names, "Should have primary key index"
+            assert 'Node_pkey' in index_names, "Should have primary key index"
             assert 'idx_node_name' in index_names, "Should have name index"
             
             cur.close()
@@ -89,19 +89,19 @@ class TestDatabaseFunctions:
                 release_db_connection(conn)
     
     def test_node_data(self):
-        """Test that the node table has at least 19 artist records"""
+        """Test that the Node table has at least 19 artist records"""
         conn = None
         try:
             conn = get_db_connection()
             cur = conn.cursor()
             
             # Check record count for artists specifically
-            cur.execute("SELECT COUNT(*) FROM node WHERE \"nodeType\" = 'artist';")
+            cur.execute("SELECT COUNT(*) FROM \"Node\" WHERE \"nodeType\" = 'artist';")
             count = cur.fetchone()[0]
             assert count >= 19, f"Should have at least 19 artist records, found {count}"
             
             # Check that all records have valid data
-            cur.execute("SELECT id, name FROM node ORDER BY id;")
+            cur.execute("SELECT id, name FROM \"Node\" ORDER BY id;")
             rows = cur.fetchall()
             
             for row in rows:
@@ -116,14 +116,14 @@ class TestDatabaseFunctions:
                 release_db_connection(conn)
     
     def test_node_data_diversity(self):
-        """Test that the node data contains diverse names"""
+        """Test that the Node data contains diverse names"""
         conn = None
         try:
             conn = get_db_connection()
             cur = conn.cursor()
             
             # Get all names
-            cur.execute("SELECT name FROM node;")
+            cur.execute("SELECT name FROM \"Node\";")
             names = [row[0] for row in cur.fetchall()]
             
             # Check for some expected names from different cultures
@@ -139,7 +139,7 @@ class TestDatabaseFunctions:
                 release_db_connection(conn)
     
     def test_artist_table_exists(self):
-        """Test that the artist table exists with correct structure"""
+        """Test that the Artist table exists with correct structure"""
         conn = None
         try:
             conn = get_db_connection()
@@ -149,7 +149,7 @@ class TestDatabaseFunctions:
             cur.execute("""
                 SELECT EXISTS (
                     SELECT FROM information_schema.tables 
-                    WHERE table_name = 'artist'
+                    WHERE table_name = 'Artist'
                 );
             """)
             exists = cur.fetchone()[0]
@@ -159,7 +159,7 @@ class TestDatabaseFunctions:
             cur.execute("""
                 SELECT column_name, data_type
                 FROM information_schema.columns
-                WHERE table_name = 'artist'
+                WHERE table_name = 'Artist'
                 ORDER BY ordinal_position;
             """)
             columns = cur.fetchall()
@@ -174,7 +174,7 @@ class TestDatabaseFunctions:
                 release_db_connection(conn)
     
     def test_artist_indexes(self):
-        """Test that the artist table has the required indexes"""
+        """Test that the Artist table has the required indexes"""
         conn = None
         try:
             conn = get_db_connection()
@@ -184,7 +184,7 @@ class TestDatabaseFunctions:
             cur.execute("""
                 SELECT indexname, indexdef
                 FROM pg_indexes
-                WHERE tablename = 'artist'
+                WHERE tablename = 'Artist'
                 ORDER BY indexname;
             """)
             indexes = cur.fetchall()
@@ -193,7 +193,7 @@ class TestDatabaseFunctions:
             assert len(indexes) >= 1, "Should have at least 1 index"
             
             index_names = [idx[0] for idx in indexes]
-            assert 'artist_pkey' in index_names, "Should have primary key index"
+            assert 'Artist_pkey' in index_names, "Should have primary key index"
             
             cur.close()
         finally:
@@ -201,19 +201,19 @@ class TestDatabaseFunctions:
                 release_db_connection(conn)
     
     def test_artist_data(self):
-        """Test that the artist table has 19 records matching node IDs"""
+        """Test that the Artist table has 19 records matching Node IDs"""
         conn = None
         try:
             conn = get_db_connection()
             cur = conn.cursor()
             
             # Check record count
-            cur.execute("SELECT COUNT(*) FROM artist;")
+            cur.execute("SELECT COUNT(*) FROM \"Artist\";")
             count = cur.fetchone()[0]
             assert count == 19, f"Should have 19 records, found {count}"
             
             # Check that all artistIds are from 1 to 19
-            cur.execute("SELECT \"artistId\" FROM artist ORDER BY \"artistId\";")
+            cur.execute("SELECT \"artistId\" FROM \"Artist\" ORDER BY \"artistId\";")
             artist_ids = [row[0] for row in cur.fetchall()]
             expected_ids = list(range(1, 20))
             assert artist_ids == expected_ids, f"Artist IDs should be 1-19, got {artist_ids}"
@@ -224,17 +224,17 @@ class TestDatabaseFunctions:
                 release_db_connection(conn)
     
     def test_artist_node_relationship(self):
-        """Test that artist IDs match node IDs"""
+        """Test that artist IDs match Node IDs"""
         conn = None
         try:
             conn = get_db_connection()
             cur = conn.cursor()
             
-            # Check that all artist IDs have corresponding node IDs
+            # Check that all artist IDs have corresponding Node IDs
             cur.execute("""
                 SELECT a."artistId", n.id 
-                FROM artist a
-                LEFT JOIN node n ON a."artistId" = n.id
+                FROM "Artist" a
+                LEFT JOIN "Node" n ON a."artistId" = n.id
                 ORDER BY a."artistId";
             """)
             rows = cur.fetchall()

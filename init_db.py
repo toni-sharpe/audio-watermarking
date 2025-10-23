@@ -10,11 +10,11 @@ def init_database():
         conn = psycopg2.connect(**DB_CONFIG)
         cur = conn.cursor()
         
-        print("Creating node table...")
+        print("Creating Node table...")
         
-        # Create node table with primary key, indexed id, and indexed name
+        # Create Node table with primary key, indexed id, and indexed name
         cur.execute("""
-            CREATE TABLE IF NOT EXISTS node (
+            CREATE TABLE IF NOT EXISTS "Node" (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(240) NOT NULL
             );
@@ -22,21 +22,21 @@ def init_database():
         
         # Create index on name field
         cur.execute("""
-            CREATE INDEX IF NOT EXISTS idx_node_name ON node(name);
+            CREATE INDEX IF NOT EXISTS idx_node_name ON "Node"(name);
         """)
         
-        print("Creating artist table...")
+        print("Creating Artist table...")
         
-        # Create artist table with indexed artistId column
+        # Create Artist table with indexed artistId column
         # Note: PRIMARY KEY automatically creates an index
         cur.execute("""
-            CREATE TABLE IF NOT EXISTS artist (
+            CREATE TABLE IF NOT EXISTS "Artist" (
                 "artistId" INTEGER PRIMARY KEY
             );
         """)
         
         # Check if table already has data
-        cur.execute("SELECT COUNT(*) FROM node;")
+        cur.execute("SELECT COUNT(*) FROM \"Node\";")
         count = cur.fetchone()[0]
         
         if count == 0:
@@ -67,22 +67,22 @@ def init_database():
             
             # Insert names into table
             for name in names:
-                cur.execute("INSERT INTO node (name) VALUES (%s);", (name,))
+                cur.execute("INSERT INTO \"Node\" (name) VALUES (%s);", (name,))
             
             print(f"Successfully added {len(names)} names to the database.")
         else:
             print(f"Table already contains {count} records. Skipping data insertion.")
         
-        # Check if artist table already has data
-        cur.execute("SELECT COUNT(*) FROM artist;")
+        # Check if Artist table already has data
+        cur.execute("SELECT COUNT(*) FROM \"Artist\";")
         artist_count = cur.fetchone()[0]
         
         if artist_count == 0:
             print("Adding 19 artist records...")
             
-            # Insert artistId values from 1 to 19 to match node IDs
+            # Insert artistId values from 1 to 19 to match Node IDs
             for artist_id in range(1, 20):
-                cur.execute("INSERT INTO artist (\"artistId\") VALUES (%s);", (artist_id,))
+                cur.execute("INSERT INTO \"Artist\" (\"artistId\") VALUES (%s);", (artist_id,))
             
             print(f"Successfully added 19 artist records to the database.")
         else:
@@ -93,14 +93,14 @@ def init_database():
         print("Database initialization completed successfully!")
         
         # Display the data
-        cur.execute("SELECT id, name FROM node ORDER BY id;")
+        cur.execute("SELECT id, name FROM \"Node\" ORDER BY id;")
         rows = cur.fetchall()
         print("\nCurrent nodes in database:")
         for row in rows:
             print(f"  ID: {row[0]}, Name: {row[1]}")
         
         # Display artist data
-        cur.execute("SELECT \"artistId\" FROM artist ORDER BY \"artistId\";")
+        cur.execute("SELECT \"artistId\" FROM \"Artist\" ORDER BY \"artistId\";")
         artist_rows = cur.fetchall()
         print("\nCurrent artists in database:")
         for row in artist_rows:
