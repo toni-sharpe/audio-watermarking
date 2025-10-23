@@ -54,7 +54,7 @@ def migrate_database():
         if cur.fetchone() is None:
             cur.execute("""
                 ALTER TABLE "Node" 
-                ADD COLUMN "nodeType" VARCHAR(32);
+                ADD COLUMN "nodeType" CHAR(32);
             """)
             
             # Set existing 19 artists to "artist"

@@ -76,7 +76,7 @@ curl http://127.0.0.1:5000/api/nodes
 | Column | Type | Constraints | Indexed |
 |--------|------|-------------|---------|
 | id | SERIAL | PRIMARY KEY | Yes |
-| name | VARCHAR(240) | NOT NULL | Yes |
+| name | CHAR(240) | NOT NULL | Yes |
 
 ## Configuration
 

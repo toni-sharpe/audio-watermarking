@@ -16,7 +16,7 @@ def init_database():
         cur.execute("""
             CREATE TABLE IF NOT EXISTS "Node" (
                 id SERIAL PRIMARY KEY,
-                name VARCHAR(240) NOT NULL
+                name CHAR(240) NOT NULL
             );
         """)
         

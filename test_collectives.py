@@ -150,8 +150,8 @@ class TestCollectiveManagement:
             column = cur.fetchone()
             
             assert column is not None, "nodeType column should exist"
-            assert column[1] == 'character varying', "nodeType should be varchar"
-            assert column[2] == 32, "nodeType should be varchar(32)"
+            assert column[1] == 'character', "nodeType should be char"
+            assert column[2] == 32, "nodeType should be char(32)"
             
             cur.close()
         finally:
