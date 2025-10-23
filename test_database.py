@@ -52,8 +52,8 @@ class TestDatabaseFunctions:
             assert columns[0][0] == 'id', "First column should be 'id'"
             assert columns[0][1] == 'integer', "id should be integer"
             assert columns[1][0] == 'name', "Second column should be 'name'"
-            assert columns[1][1] == 'character varying', "name should be varchar"
-            assert columns[1][2] == 240, "name should be varchar(240)"
+            assert columns[1][1] == 'character', "name should be char"
+            assert columns[1][2] == 240, "name should be char(240)"
             
             cur.close()
         finally:
