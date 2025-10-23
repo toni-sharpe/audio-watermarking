@@ -14,8 +14,8 @@ app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB max file size
 # Enable CORS for the React frontend running on port 3000
 # Only allow CORS on API endpoints that need cross-origin access
 CORS(app, resources={
-    r"/upload": {"origins": "http://localhost:3000"},
-    r"/remove": {"origins": "http://localhost:3000"},
+    r"/upload": {"origins": "http://localhost:3000", "expose_headers": ["Content-Disposition"]},
+    r"/remove": {"origins": "http://localhost:3000", "expose_headers": ["Content-Disposition"]},
     r"/api/*": {"origins": "http://localhost:3000"}
 })
 
