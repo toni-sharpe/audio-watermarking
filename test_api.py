@@ -13,18 +13,6 @@ def client():
 class TestAPIEndpoints:
     """Test suite for API endpoints"""
     
-    def test_index_page(self, client):
-        """Test that the index page loads"""
-        response = client.get('/')
-        assert response.status_code == 200
-        assert b'Audio Watermarking Tool' in response.data
-    
-    def test_artists_page(self, client):
-        """Test that the artists page loads"""
-        response = client.get('/artists')
-        assert response.status_code == 200
-        assert b'Artists Database' in response.data
-    
     def test_api_nodes_endpoint(self, client):
         """Test the /api/nodes endpoint"""
         response = client.get('/api/nodes')

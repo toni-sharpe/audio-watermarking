@@ -121,16 +121,6 @@ def remove_watermark_samples(input_wav_path, output_wav_path):
         wav_out.setframerate(frame_rate)
         wav_out.writeframes(unwatermarked_data.astype(np.int16).tobytes())
 
-@app.route('/')
-def index():
-    """Serve the HTML page"""
-    return send_file('index.html')
-
-@app.route('/artists')
-def artists():
-    """Serve the artists HTML page"""
-    return send_file('artists.html')
-
 @app.route('/api/nodes')
 def get_nodes():
     """API endpoint to retrieve all nodes from the database"""
