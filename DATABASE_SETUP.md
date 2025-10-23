@@ -26,22 +26,34 @@ brew services start postgresql
 #### On Windows:
 Download and install from: https://www.postgresql.org/download/windows/
 
-### 2. Create Database
+### 2. Set PostgreSQL Password and Create Database
 
-After installing PostgreSQL, create the database:
+After installing PostgreSQL, set the postgres user password and create the database:
 
 ```bash
 # Switch to postgres user (Linux/Mac)
 sudo -u postgres psql
-
-# Or connect directly (if already configured)
-psql -U postgres
 ```
 
 In the PostgreSQL prompt:
 ```sql
+-- Set the postgres user password (required for PGAdmin 4 and remote connections)
+ALTER USER postgres WITH PASSWORD 'postgres';
+
+-- Create the database
 CREATE DATABASE audio_watermark;
+
+-- Exit
 \q
+```
+
+Alternatively, you can run these commands directly:
+```bash
+# Set password
+sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+
+# Create database
+sudo -u postgres psql -c "CREATE DATABASE audio_watermark;"
 ```
 
 ### 3. Configure Environment Variables (Optional)
@@ -133,6 +145,49 @@ SELECT COUNT(*) FROM node;
 \q
 ```
 
+## Connecting via PGAdmin 4
+
+PGAdmin 4 is a popular GUI tool for managing PostgreSQL databases. Here's how to connect:
+
+### 1. Ensure PostgreSQL Password is Set
+
+Make sure the postgres user has the password 'postgres' (as configured in `db_config.py`):
+
+```bash
+sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+```
+
+### 2. Create a New Server Connection in PGAdmin 4
+
+1. Open PGAdmin 4
+2. Right-click on "Servers" → "Register" → "Server"
+3. In the "General" tab:
+   - **Name**: Audio Watermark DB (or any name you prefer)
+4. In the "Connection" tab:
+   - **Host name/address**: `127.0.0.1` (use IP, not "localhost")
+   - **Port**: `5432`
+   - **Maintenance database**: `postgres`
+   - **Username**: `postgres`
+   - **Password**: `postgres`
+   - **Save password**: Check this box (optional)
+5. Click "Save"
+
+### 3. Navigate to the Database
+
+After connecting:
+1. Expand the server node
+2. Expand "Databases"
+3. Find and expand "audio_watermark"
+4. Explore "Schemas" → "public" → "Tables" to see the `node`, `artist`, and `ArtistCollective` tables
+
+### Troubleshooting PGAdmin 4 Connection
+
+If you get "password authentication failed for user postgres":
+- Verify the password is set correctly (see step 1 above)
+- Use IP address `127.0.0.1` instead of `localhost` in the connection settings
+- Check PostgreSQL is running: `sudo systemctl status postgresql`
+- Verify TCP/IP connections are allowed in `pg_hba.conf` (should have `scram-sha-256` or `md5` authentication for 127.0.0.1)
+
 ## Running the Application
 
 After database setup, start the Flask application:
@@ -183,10 +238,41 @@ netstat -an | grep 5432
 
 If you get authentication errors:
 
-1. Edit PostgreSQL's `pg_hba.conf` file (location varies by OS)
-2. Add/modify line for local connections:
+#### Setting the postgres user password
+
+The application expects the postgres user to have the password `postgres`. Set this password:
+
+```bash
+# Connect as postgres user
+sudo -u postgres psql
+
+# Set the password
+ALTER USER postgres WITH PASSWORD 'postgres';
+
+# Exit
+\q
 ```
-local   all   postgres   trust
+
+#### For PGAdmin 4 Connection
+
+When connecting via PGAdmin 4 or other GUI tools, use these settings:
+- **Host**: 127.0.0.1 (or localhost)
+- **Port**: 5432
+- **Database**: audio_watermark
+- **Username**: postgres
+- **Password**: postgres
+
+**Important**: Use the IP address `127.0.0.1` instead of `localhost` if you encounter connection issues. PGAdmin 4 may try to use Unix socket connections with `localhost`, which uses `peer` authentication by default.
+
+#### Configuring pg_hba.conf (if needed)
+
+If you still have issues, check PostgreSQL's `pg_hba.conf` file:
+
+1. Find the file location (usually `/etc/postgresql/16/main/pg_hba.conf` on Ubuntu)
+2. Ensure these lines exist for TCP/IP connections:
+```
+host    all             all             127.0.0.1/32            scram-sha-256
+host    all             all             ::1/128                 scram-sha-256
 ```
 
 3. Restart PostgreSQL:
