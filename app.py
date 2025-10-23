@@ -45,21 +45,35 @@ def add_watermark_samples(input_wav_path, output_wav_path):
         n_frames = wav_in.getnframes()
         
         # Validate parameters
-        if frame_rate != 44100:
-            raise ValueError(f"Sample rate must be 44.1kHz (44100 Hz), got {frame_rate} Hz")
-        if sample_width != 2:
-            raise ValueError(f"Sample width must be 2 bytes (16-bit), got {sample_width} bytes")
+        if frame_rate not in [44100, 48000]:
+            raise ValueError(f"Sample rate must be 44.1kHz (44100 Hz) or 48kHz (48000 Hz), got {frame_rate} Hz")
+        if sample_width not in [2, 3]:
+            raise ValueError(f"Sample width must be 2 bytes (16-bit) or 3 bytes (24-bit), got {sample_width} bytes")
         
         # Read all frames
         frames = wav_in.readframes(n_frames)
-        audio_data = np.frombuffer(frames, dtype=np.int16)
+        
+        # Handle different bit depths
+        if sample_width == 2:
+            audio_data = np.frombuffer(frames, dtype=np.int16)
+        elif sample_width == 3:
+            # 24-bit audio: convert to int32
+            audio_data = np.frombuffer(frames, dtype=np.uint8)
+            # Reshape to groups of 3 bytes
+            audio_data = audio_data.reshape(-1, 3)
+            # Convert 24-bit to 32-bit signed integer
+            audio_data = np.pad(audio_data, ((0, 0), (0, 1)), mode='constant')
+            audio_data = audio_data.view(np.int32) >> 8
+            audio_data = audio_data.flatten()
         
         # Reshape if stereo
         if n_channels == 2:
             audio_data = audio_data.reshape(-1, 2)
     
-    # Create watermark samples
-    watermark_samples = np.array([db_to_amplitude(db) for db in DB_VALUES], dtype=np.int16)
+    # Create watermark samples with appropriate bit depth
+    bit_depth = sample_width * 8
+    watermark_samples = np.array([db_to_amplitude(db, bit_depth) for db in DB_VALUES], 
+                                  dtype=np.int32 if sample_width == 3 else np.int16)
     
     # For stereo, replicate watermark to both channels
     if n_channels == 2:
@@ -81,7 +95,20 @@ def add_watermark_samples(input_wav_path, output_wav_path):
         wav_out.setnchannels(n_channels)
         wav_out.setsampwidth(sample_width)
         wav_out.setframerate(frame_rate)
-        wav_out.writeframes(watermarked_data.astype(np.int16).tobytes())
+        
+        # Convert back to bytes based on bit depth
+        if sample_width == 2:
+            wav_out.writeframes(watermarked_data.astype(np.int16).tobytes())
+        elif sample_width == 3:
+            # Convert 32-bit back to 24-bit
+            data_32 = watermarked_data.astype(np.int32)
+            # Shift left to put data in upper 24 bits
+            data_32 = data_32 << 8
+            # Convert to bytes and take only the 3 lower bytes
+            data_bytes = data_32.tobytes()
+            # Extract 24-bit values (skip the most significant byte of each 32-bit value)
+            data_24 = np.frombuffer(data_bytes, dtype=np.uint8).reshape(-1, 4)[:, 1:4].tobytes()
+            wav_out.writeframes(data_24)
 
 def remove_watermark_samples(input_wav_path, output_wav_path):
     """Remove the first 16 watermark samples from the beginning of the audio file"""
@@ -94,14 +121,26 @@ def remove_watermark_samples(input_wav_path, output_wav_path):
         n_frames = wav_in.getnframes()
         
         # Validate parameters
-        if frame_rate != 44100:
-            raise ValueError(f"Sample rate must be 44.1kHz (44100 Hz), got {frame_rate} Hz")
-        if sample_width != 2:
-            raise ValueError(f"Sample width must be 2 bytes (16-bit), got {sample_width} bytes")
+        if frame_rate not in [44100, 48000]:
+            raise ValueError(f"Sample rate must be 44.1kHz (44100 Hz) or 48kHz (48000 Hz), got {frame_rate} Hz")
+        if sample_width not in [2, 3]:
+            raise ValueError(f"Sample width must be 2 bytes (16-bit) or 3 bytes (24-bit), got {sample_width} bytes")
         
         # Read all frames
         frames = wav_in.readframes(n_frames)
-        audio_data = np.frombuffer(frames, dtype=np.int16)
+        
+        # Handle different bit depths
+        if sample_width == 2:
+            audio_data = np.frombuffer(frames, dtype=np.int16)
+        elif sample_width == 3:
+            # 24-bit audio: convert to int32
+            audio_data = np.frombuffer(frames, dtype=np.uint8)
+            # Reshape to groups of 3 bytes
+            audio_data = audio_data.reshape(-1, 3)
+            # Convert 24-bit to 32-bit signed integer
+            audio_data = np.pad(audio_data, ((0, 0), (0, 1)), mode='constant')
+            audio_data = audio_data.view(np.int32) >> 8
+            audio_data = audio_data.flatten()
         
         # Reshape if stereo
         if n_channels == 2:
@@ -119,7 +158,20 @@ def remove_watermark_samples(input_wav_path, output_wav_path):
         wav_out.setnchannels(n_channels)
         wav_out.setsampwidth(sample_width)
         wav_out.setframerate(frame_rate)
-        wav_out.writeframes(unwatermarked_data.astype(np.int16).tobytes())
+        
+        # Convert back to bytes based on bit depth
+        if sample_width == 2:
+            wav_out.writeframes(unwatermarked_data.astype(np.int16).tobytes())
+        elif sample_width == 3:
+            # Convert 32-bit back to 24-bit
+            data_32 = unwatermarked_data.astype(np.int32)
+            # Shift left to put data in upper 24 bits
+            data_32 = data_32 << 8
+            # Convert to bytes and take only the 3 lower bytes
+            data_bytes = data_32.tobytes()
+            # Extract 24-bit values (skip the most significant byte of each 32-bit value)
+            data_24 = np.frombuffer(data_bytes, dtype=np.uint8).reshape(-1, 4)[:, 1:4].tobytes()
+            wav_out.writeframes(data_24)
 
 @app.route('/api/nodes')
 def get_nodes():
@@ -220,19 +272,28 @@ def upload_file():
         with open(output_path, 'rb') as f:
             output_data = io.BytesIO(f.read())
         
+        # Create new filename with format: [original-name]--WM.[file-type]
+        original_filename = file.filename
+        name_parts = original_filename.rsplit('.', 1)
+        if len(name_parts) == 2:
+            base_name, extension = name_parts
+            new_filename = f"{base_name}--WM.{extension}"
+        else:
+            new_filename = f"{original_filename}--WM"
+        
         # Send the processed file back
         output_data.seek(0)
         return send_file(
             output_data,
             mimetype='audio/wav',
             as_attachment=True,
-            download_name=f'watermarked_{file.filename}'
+            download_name=new_filename
         )
     
     except Exception as e:
         # Note: In production, avoid exposing detailed error messages to users
         # Use proper logging instead and return generic error messages
-        return 'Error processing file. Please ensure the file is a valid 44.1kHz 16-bit WAV file.', 500
+        return 'Error processing file. Please ensure the file is a valid WAV file (44.1kHz or 48kHz, 16-bit or 24-bit).', 500
     
     finally:
         # Clean up temporary files
@@ -276,19 +337,28 @@ def remove_watermark():
         with open(output_path, 'rb') as f:
             output_data = io.BytesIO(f.read())
         
+        # Create new filename with format: [original-name]--NWM.[file-type]
+        original_filename = file.filename
+        name_parts = original_filename.rsplit('.', 1)
+        if len(name_parts) == 2:
+            base_name, extension = name_parts
+            new_filename = f"{base_name}--NWM.{extension}"
+        else:
+            new_filename = f"{original_filename}--NWM"
+        
         # Send the processed file back
         output_data.seek(0)
         return send_file(
             output_data,
             mimetype='audio/wav',
             as_attachment=True,
-            download_name=f'unwatermarked_{file.filename}'
+            download_name=new_filename
         )
     
     except Exception as e:
         # Note: In production, avoid exposing detailed error messages to users
         # Use proper logging instead and return generic error messages
-        return 'Error processing file. Please ensure the file is a valid 44.1kHz 16-bit WAV file with at least 16 samples.', 500
+        return 'Error processing file. Please ensure the file is a valid WAV file (44.1kHz or 48kHz, 16-bit or 24-bit) with at least 16 samples.', 500
     
     finally:
         # Clean up temporary files
