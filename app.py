@@ -9,7 +9,7 @@ from db_config import get_db_connection, release_db_connection
 
 app = Flask(__name__, static_folder='.')
 CORS(app)  # Enable CORS for React frontend
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB max file size
 
 # Enable CORS for the React frontend running on port 3000
 # Only allow CORS on API endpoints that need cross-origin access

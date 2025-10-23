@@ -78,7 +78,7 @@ The watermark samples are prepended to the original audio data.
 - **Audio Processing**: NumPy for array manipulation, wave module for WAV file handling
 - **Frontend**: Single HTML page with vanilla JavaScript
 - **File Format**: WAV (44.1kHz or 48kHz, 16-bit or 24-bit, mono or stereo)
-- **Max Upload Size**: 100 MB
+- **Max Upload Size**: 500 MB
 - **Download Format**: 
   - Watermarked: `[original-name]--WM.wav`
   - Unwatermarked: `[original-name]--NWM.wav`
