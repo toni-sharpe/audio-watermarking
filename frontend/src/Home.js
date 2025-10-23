@@ -132,9 +132,10 @@ function Home() {
             
             <div className="info">
                 <p><strong>Requirements:</strong></p>
-                <p>• Audio file at 44.1kHz sample rate</p>
-                <p>• 16-bit sample format</p>
+                <p>• Audio file at 44.1kHz or 48kHz sample rate</p>
+                <p>• 16-bit or 24-bit sample format</p>
                 <p>• Supported formats: WAV</p>
+                <p>• Maximum file size: 500MB</p>
             </div>
 
             <h2>Add Watermark</h2>
