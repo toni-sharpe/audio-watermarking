@@ -94,7 +94,7 @@ python init_db.py
 This will:
 - Create the `node` table with:
   - `id`: Auto-incrementing primary key (indexed)
-  - `name`: VARCHAR(240) field (indexed)
+  - `name`: CHAR(240) field (indexed)
 - Insert 19 globally diverse human names
 
 ### 6. Verify Database Setup
@@ -302,7 +302,7 @@ GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres;
 | Column | Type | Constraints | Indexed |
 |--------|------|-------------|---------|
 | id | INTEGER | PRIMARY KEY, AUTO INCREMENT | Yes (PK) |
-| name | VARCHAR(240) | NOT NULL | Yes |
+| name | CHAR(240) | NOT NULL | Yes |
 
 ### Sample Data
 
