@@ -4,9 +4,10 @@ A simple web application for adding watermark samples to audio files.
 
 ## Features
 
-- Upload WAV audio files (44.1kHz, 16-bit)
+- Upload WAV audio files (44.1kHz or 48kHz, 16-bit or 24-bit)
 - Automatically adds 16 watermark samples at the beginning of the file
-- Downloads the processed audio file
+- Downloads the processed audio file with format: `[original-name]--WM.wav` for watermarked files
+- Remove watermark and download with format: `[original-name]--NWM.wav` for unwatermarked files
 - Support for both mono and stereo audio files
 
 ## Requirements
@@ -52,7 +53,7 @@ A simple web application for adding watermark samples to audio files.
    http://localhost:3000
    ```
 
-4. Upload a WAV file (44.1kHz, 16-bit) and the processed file will be automatically downloaded
+4. Upload a WAV file (44.1kHz or 48kHz, 16-bit or 24-bit) and the processed file will be automatically downloaded
 
 ### Legacy HTML Interface
 
@@ -76,8 +77,11 @@ The watermark samples are prepended to the original audio data.
 - **Backend**: Python Flask server
 - **Audio Processing**: NumPy for array manipulation, wave module for WAV file handling
 - **Frontend**: Single HTML page with vanilla JavaScript
-- **File Format**: WAV (44.1kHz, 16-bit, mono or stereo)
+- **File Format**: WAV (44.1kHz or 48kHz, 16-bit or 24-bit, mono or stereo)
 - **Max Upload Size**: 100 MB
+- **Download Format**: 
+  - Watermarked: `[original-name]--WM.wav`
+  - Unwatermarked: `[original-name]--NWM.wav`
 
 ## Security Notes
 
@@ -92,9 +96,9 @@ For production deployment:
 
 To test the application with a sample file:
 
-1. Create a test audio file (or use your own 44.1kHz 16-bit WAV file)
+1. Create a test audio file (or use your own 44.1kHz or 48kHz, 16-bit or 24-bit WAV file)
 2. Upload through the web interface
-3. The watermarked file will download automatically with prefix `watermarked_`
+3. The watermarked file will download automatically with suffix `--WM`
 
 ## Purpose
 
