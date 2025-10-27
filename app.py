@@ -388,16 +388,25 @@ def extract_metadata():
     # Create temporary file for the uploaded audio
     input_fd, input_path = tempfile.mkstemp(suffix='.wav')
     
-    # Determine output JSON filename
+    # Sanitize filename to prevent path traversal attacks
+    import re
     original_filename = file.filename
-    name_parts = original_filename.rsplit('.', 1)
+    # Remove any directory separators and only keep alphanumeric, dash, underscore, and dot
+    safe_filename = re.sub(r'[^\w\-.]', '_', os.path.basename(original_filename))
+    
+    # Determine output JSON filename
+    name_parts = safe_filename.rsplit('.', 1)
     if len(name_parts) == 2:
         base_name, _ = name_parts
         json_filename = f"{base_name}-metadata.json"
     else:
-        json_filename = f"{original_filename}-metadata.json"
+        json_filename = f"{safe_filename}-metadata.json"
     
-    # Save JSON to root directory
+    # Additional validation: ensure the filename doesn't contain path separators
+    if '..' in json_filename or '/' in json_filename or '\\' in json_filename:
+        return jsonify({'error': 'Invalid filename'}), 400
+    
+    # Save JSON to root directory with sanitized filename
     json_output_path = os.path.join(os.path.dirname(__file__), json_filename)
     
     try:
@@ -424,9 +433,10 @@ def extract_metadata():
             except:
                 pass
         
+        # Don't expose internal error details to users
         return jsonify({
             'success': False,
-            'error': f'Error processing file: {str(e)}'
+            'error': 'Error processing file. Please ensure the file is a valid WAV file.'
         }), 500
     
     finally:
