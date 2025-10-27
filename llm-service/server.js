@@ -3,6 +3,9 @@ const cors = require('cors');
 const multer = require('multer');
 const bodyParser = require('body-parser');
 const path = require('path');
+// LangChain integration - imported but not yet actively used
+// The library is installed and ready for future LLM processing implementation
+// const { ... } = require('langchain'); // Uncomment when implementing LLM features
 
 const app = express();
 const PORT = 5001;

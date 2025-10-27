@@ -77,6 +77,7 @@ curl http://localhost:5001/health
 This service uses **LangChain** as the LLM library because it is:
 - Very popular (142k+ stars on GitHub)
 - Well-maintained with many contributors
+- Well-forked and widely adopted
 - Actively developed
 - Designed specifically for building LLM applications
 - Widely adopted in the industry
