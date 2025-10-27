@@ -123,8 +123,11 @@ function Home() {
             <h1>Audio Watermarking Tool</h1>
             
             <div className="nav" style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <Link to="/artists" style={{ color: '#4CAF50', textDecoration: 'none', fontSize: '14px' }}>
+                <Link to="/artists" style={{ color: '#4CAF50', textDecoration: 'none', fontSize: '14px', marginRight: '15px' }}>
                     View Artists Database →
+                </Link>
+                <Link to="/llm" style={{ color: '#4CAF50', textDecoration: 'none', fontSize: '14px' }}>
+                    LLM Service →
                 </Link>
             </div>
             
