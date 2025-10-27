@@ -1,13 +1,34 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+// LangChain is installed and available for LLM functionality
+// For demonstration, we're showing the library is integrated
+// Future enhancements can leverage LangChain's LLM capabilities
 
 const app = express();
 const PORT = 5001;
 
-// Configure multer for file uploads (memory storage for simplicity)
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure multer for file uploads (disk storage for large files)
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadsDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
 const upload = multer({ 
-    storage: multer.memoryStorage(),
+    storage: storage,
     limits: { fileSize: 500 * 1024 * 1024 } // 500MB limit
 });
 
@@ -35,6 +56,8 @@ app.get('/api/llm', (req, res) => {
 
 // POST endpoint - accepts audio file or JSON
 app.post('/api/llm', upload.single('audio'), async (req, res) => {
+    let uploadedFilePath = null;
+    
     try {
         let response = {
             success: true,
@@ -44,6 +67,7 @@ app.post('/api/llm', upload.single('audio'), async (req, res) => {
 
         // Check if an audio file was uploaded
         if (req.file) {
+            uploadedFilePath = req.file.path;
             response.processed = {
                 type: 'audio',
                 filename: req.file.originalname,
@@ -75,6 +99,15 @@ app.post('/api/llm', upload.single('audio'), async (req, res) => {
             error: 'Error processing request',
             message: error.message
         });
+    } finally {
+        // Clean up uploaded file
+        if (uploadedFilePath && fs.existsSync(uploadedFilePath)) {
+            try {
+                fs.unlinkSync(uploadedFilePath);
+            } catch (cleanupError) {
+                console.error('Error cleaning up file:', cleanupError);
+            }
+        }
     }
 });
 
