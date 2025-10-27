@@ -40,6 +40,9 @@ def update_artist_collective_data():
         # 23: Acoustic Ensemble (should have many)
         # 24: Sonic Wavelength (should have many)
         
+        # Note: Hard-coded IDs are intentional - this script is designed to work
+        # with the specific data created by migrate_collectives.py for test setup.
+        # These assignments are based on the existing artist and collective distributions.
         multi_assignments = [
             (1, 22),   # Amara Okafor: add to Melodic Synthesis (already in Sonic Wavelength)
             (3, 24),   # Priya Sharma: add to Sonic Wavelength (already in Acoustic Ensemble)
