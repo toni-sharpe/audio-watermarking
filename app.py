@@ -6,6 +6,7 @@ import io
 import os
 import tempfile
 from db_config import get_db_connection, release_db_connection
+from audio_metadata import extract_and_save_metadata
 
 app = Flask(__name__, static_folder='.')
 CORS(app)  # Enable CORS for React frontend
@@ -367,6 +368,82 @@ def remove_watermark():
                 os.remove(input_path)
             if os.path.exists(output_path):
                 os.remove(output_path)
+        except Exception:
+            pass  # Ignore cleanup errors
+
+@app.route('/api/metadata', methods=['POST'])
+def extract_metadata():
+    """Handle audio file upload and metadata extraction"""
+    if 'audio' not in request.files:
+        return jsonify({'error': 'No audio file provided'}), 400
+    
+    file = request.files['audio']
+    
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    
+    if not file.filename.lower().endswith('.wav'):
+        return jsonify({'error': 'Only WAV files are supported'}), 400
+    
+    # Create temporary file for the uploaded audio
+    input_fd, input_path = tempfile.mkstemp(suffix='.wav')
+    
+    # Sanitize filename to prevent path traversal attacks
+    import re
+    original_filename = file.filename
+    # Remove any directory separators and only keep alphanumeric, dash, underscore, and dot
+    safe_filename = re.sub(r'[^\w\-.]', '_', os.path.basename(original_filename))
+    
+    # Determine output JSON filename
+    name_parts = safe_filename.rsplit('.', 1)
+    if len(name_parts) == 2:
+        base_name, _ = name_parts
+        json_filename = f"{base_name}-metadata.json"
+    else:
+        json_filename = f"{safe_filename}-metadata.json"
+    
+    # Additional validation: ensure the filename doesn't contain path separators
+    if '..' in json_filename or '/' in json_filename or '\\' in json_filename:
+        return jsonify({'error': 'Invalid filename'}), 400
+    
+    # Save JSON to root directory with sanitized filename
+    json_output_path = os.path.join(os.path.dirname(__file__), json_filename)
+    
+    try:
+        # Close file descriptor and save uploaded file
+        os.close(input_fd)
+        file.save(input_path)
+        
+        # Extract metadata
+        metadata = extract_and_save_metadata(input_path, json_output_path)
+        
+        # Return metadata in response
+        return jsonify({
+            'success': True,
+            'metadata': metadata,
+            'json_file': json_filename,
+            'message': f'Metadata extracted and saved to {json_filename}'
+        })
+    
+    except Exception as e:
+        # Clean up JSON file if it was created
+        if os.path.exists(json_output_path):
+            try:
+                os.remove(json_output_path)
+            except:
+                pass
+        
+        # Don't expose internal error details to users
+        return jsonify({
+            'success': False,
+            'error': 'Error processing file. Please ensure the file is a valid WAV file.'
+        }), 500
+    
+    finally:
+        # Clean up temporary file
+        try:
+            if os.path.exists(input_path):
+                os.remove(input_path)
         except Exception:
             pass  # Ignore cleanup errors
 
