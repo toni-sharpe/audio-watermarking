@@ -8,6 +8,8 @@ A Node.js service powered by LangChain.js for LLM capabilities.
 - **GET Endpoint**: Returns service information and available endpoints
 - **POST Endpoint**: Accepts audio files or JSON data for processing
 - **CORS Enabled**: Configured for cross-origin requests from the React frontend
+- **Rate Limiting**: Protected against DoS attacks with configurable rate limits
+- **Secure File Handling**: Uses disk storage with automatic cleanup
 
 ## Installation
 
@@ -108,3 +110,14 @@ LangChain.js is the official TypeScript/JavaScript library for building LLM appl
 - **Type-Safe**: Written in TypeScript with excellent type definitions
 
 Learn more at: https://github.com/langchain-ai/langchainjs
+
+## Security Features
+
+- **Rate Limiting**: API endpoints are protected with express-rate-limit
+  - General API: 100 requests per 15 minutes per IP
+  - File uploads: 10 uploads per 15 minutes per IP
+- **File Upload Security**: 
+  - Uses disk storage with controlled destination and filename
+  - Automatic file cleanup after processing
+  - 500MB file size limit
+- **Path Injection Protection**: File paths are managed by multer with secure configuration

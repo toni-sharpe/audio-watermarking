@@ -3,12 +3,26 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const rateLimit = require('express-rate-limit');
 // LangChain is installed and available for LLM functionality
 // For demonstration, we're showing the library is integrated
 // Future enhancements can leverage LangChain's LLM capabilities
 
 const app = express();
 const PORT = 5001;
+
+// Rate limiting configuration
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.'
+});
+
+const uploadLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit file uploads to 10 per 15 minutes per IP
+    message: 'Too many file uploads from this IP, please try again later.'
+});
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -37,7 +51,7 @@ app.use(cors());
 app.use(express.json());
 
 // GET endpoint - returns service info
-app.get('/api/llm', (req, res) => {
+app.get('/api/llm', apiLimiter, (req, res) => {
     res.json({
         service: 'LLM Service',
         version: '1.0.0',
@@ -55,7 +69,7 @@ app.get('/api/llm', (req, res) => {
 });
 
 // POST endpoint - accepts audio file or JSON
-app.post('/api/llm', upload.single('audio'), async (req, res) => {
+app.post('/api/llm', uploadLimiter, upload.single('audio'), async (req, res) => {
     let uploadedFilePath = null;
     
     try {
@@ -101,6 +115,9 @@ app.post('/api/llm', upload.single('audio'), async (req, res) => {
         });
     } finally {
         // Clean up uploaded file
+        // Note: uploadedFilePath is set by multer's diskStorage with our controlled
+        // destination and filename configuration, not directly from user input.
+        // This protects against path injection attacks.
         if (uploadedFilePath && fs.existsSync(uploadedFilePath)) {
             try {
                 fs.unlinkSync(uploadedFilePath);
