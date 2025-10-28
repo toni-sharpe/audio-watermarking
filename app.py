@@ -241,58 +241,6 @@ def get_artists():
         if conn:
             release_db_connection(conn)
 
-@app.route('/api/collectives')
-def get_collectives():
-    """API endpoint to retrieve all collectives with their artists in a hierarchical structure"""
-    conn = None
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        
-        # Query all collectives
-        cur.execute("""
-            SELECT id, name
-            FROM "Node"
-            WHERE "nodeType" = 'collective'
-            ORDER BY id;
-        """)
-        collective_rows = cur.fetchall()
-        
-        collectives = []
-        for collective_row in collective_rows:
-            collective_id = collective_row[0]
-            collective_name = collective_row[1].strip() if collective_row[1] else collective_row[1]
-            
-            # Query artists for this collective
-            cur.execute("""
-                SELECT n.id, n.name
-                FROM "ArtistCollective" ac
-                JOIN "Node" n ON ac."artistId" = n.id
-                WHERE ac."collectiveId" = %s
-                ORDER BY n.id;
-            """, (collective_id,))
-            artist_rows = cur.fetchall()
-            
-            artists = [{
-                'id': artist_row[0],
-                'name': artist_row[1].strip() if artist_row[1] else artist_row[1]
-            } for artist_row in artist_rows]
-            
-            collectives.append({
-                'id': collective_id,
-                'name': collective_name,
-                'artists': artists
-            })
-        
-        cur.close()
-        return jsonify(collectives)
-        
-    except Exception as e:
-        return jsonify({'error': 'Failed to retrieve collectives'}), 500
-    finally:
-        if conn:
-            release_db_connection(conn)
-
 @app.route('/upload', methods=['POST'])
 def upload_file():
     """Handle audio file upload and watermarking"""

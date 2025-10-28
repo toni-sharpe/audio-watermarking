@@ -4,43 +4,29 @@ import './Artists.scss';
 import { API_BASE_URL } from './config';
 
 function Artists() {
-    const [collectives, setCollectives] = useState([]);
+    const [artists, setArtists] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     useEffect(() => {
-        fetchCollectives();
+        fetchArtists();
     }, []);
 
-    const fetchCollectives = async () => {
+    const fetchArtists = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/collectives`);
+            const response = await fetch(`${API_BASE_URL}/api/nodes`);
             
             if (!response.ok) {
-                throw new Error('Failed to fetch collectives');
+                throw new Error('Failed to fetch artists');
             }
             
             const data = await response.json();
-            setCollectives(data);
+            setArtists(data);
             setLoading(false);
         } catch (err) {
-            setError('Error loading collectives: ' + err.message);
+            setError('Error loading artists: ' + err.message);
             setLoading(false);
         }
-    };
-
-    const getTotalArtistCount = () => {
-        // Count total artist entries (including duplicates if in multiple collectives)
-        return collectives.reduce((sum, collective) => sum + collective.artists.length, 0);
-    };
-
-    const getUniqueArtistCount = () => {
-        // Count unique artists
-        const artistIds = new Set();
-        collectives.forEach(collective => {
-            collective.artists.forEach(artist => artistIds.add(artist.id));
-        });
-        return artistIds.size;
     };
 
     return (
@@ -51,46 +37,33 @@ function Artists() {
             
             <h1>Artists Database</h1>
             
-            {loading && <div className="loading">Loading collectives...</div>}
+            {loading && <div className="loading">Loading artists...</div>}
             
             {error && <div className="error" style={{ display: 'block' }}>{error}</div>}
             
             {!loading && !error && (
                 <>
-                    <div className="collectives-list">
-                        {collectives.length === 0 ? (
-                            <div className="collective-item">No collectives found in database</div>
+                    <ul className="artists-list">
+                        {artists.length === 0 ? (
+                            <li className="artist-item">No artists found in database</li>
                         ) : (
-                            collectives.map(collective => (
-                                <div key={collective.id} className="collective-item">
-                                    <h2 className="collective-name">
-                                        {collective.name}
-                                        <span className="collective-id"> (ID: {collective.id})</span>
-                                    </h2>
-                                    {collective.artists.length === 0 ? (
-                                        <p className="no-artists">No artists in this collective</p>
-                                    ) : (
-                                        <ul className="artists-list">
-                                            {collective.artists.map(artist => (
-                                                <li key={`${collective.id}-${artist.id}`} className="artist-item">
-                                                    <span className="artist-id">#{artist.id}</span>
-                                                    <span className="artist-name">{artist.name}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
+                            artists.map(artist => (
+                                <li key={artist.id} className="artist-item">
+                                    <span className="artist-id">#{artist.id}</span>
+                                    <span className="artist-name">{artist.name}</span>
+                                    {artist.collective && (
+                                        <span className="artist-collective">
+                                            {artist.collective}
+                                        </span>
                                     )}
-                                </div>
+                                </li>
                             ))
                         )}
-                    </div>
+                    </ul>
                     
-                    {collectives.length > 0 && (
+                    {artists.length > 0 && (
                         <div className="count" style={{ display: 'block' }}>
-                            Total collectives: {collectives.length}
-                            <br />
-                            Unique artists: {getUniqueArtistCount()}
-                            <br />
-                            Total artist listings: {getTotalArtistCount()} (includes artists in multiple collectives)
+                            Total artists: {artists.length}
                         </div>
                     )}
                 </>
