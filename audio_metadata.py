@@ -18,7 +18,10 @@ def extract_audio_metadata(audio_file_path, output_json_path=None):
     
     Args:
         audio_file_path: Path to the audio file (WAV format)
-        output_json_path: Optional path for the JSON output. If None, uses 'audio_metadata.json' in repo root
+        output_json_path: Optional path for the JSON output. 
+                         If None (default), saves to 'audio_metadata.json' in repo root.
+                         If False, does not save to file (only returns metadata).
+                         If a string path, saves to that location.
         
     Returns:
         dict: Dictionary containing all extracted metadata
@@ -74,7 +77,7 @@ def extract_audio_metadata(audio_file_path, output_json_path=None):
             "file_path": str(audio_file_path)
         },
         "musical_characteristics": {
-            "tempo_bpm": float(tempo),
+            "tempo_bpm": float(tempo.item()) if hasattr(tempo, 'item') else float(tempo),
             "estimated_key": key_info["key"],
             "key_confidence": float(key_info["confidence"]),
             "base_frequency_hz": float(base_frequency) if base_frequency else None,
@@ -92,12 +95,18 @@ def extract_audio_metadata(audio_file_path, output_json_path=None):
     }
     
     # Save to JSON file
-    if output_json_path is None:
-        # Get the repository root (parent of the audio file if not specified)
-        output_json_path = Path(__file__).parent / "audio_metadata.json"
-    
-    with open(output_json_path, 'w') as f:
-        json.dump(metadata, f, indent=2)
+    if output_json_path is False:
+        # Don't save to file, just return metadata
+        pass
+    elif output_json_path is None:
+        # Use default location
+        default_path = Path(__file__).parent / "audio_metadata.json"
+        with open(default_path, 'w') as f:
+            json.dump(metadata, f, indent=2)
+    else:
+        # Save to specified path
+        with open(output_json_path, 'w') as f:
+            json.dump(metadata, f, indent=2)
     
     return metadata
 

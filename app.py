@@ -370,6 +370,48 @@ def remove_watermark():
         except Exception:
             pass  # Ignore cleanup errors
 
+@app.route('/api/metadata', methods=['POST'])
+def extract_metadata():
+    """Extract metadata from an audio file"""
+    if 'audio' not in request.files:
+        return jsonify({'error': 'No audio file provided'}), 400
+    
+    file = request.files['audio']
+    
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    
+    if not file.filename.lower().endswith('.wav'):
+        return jsonify({'error': 'Only WAV files are supported'}), 400
+    
+    # Create temporary file
+    input_fd, input_path = tempfile.mkstemp(suffix='.wav')
+    
+    try:
+        # Close file descriptor and save uploaded file
+        os.close(input_fd)
+        file.save(input_path)
+        
+        # Import and use metadata extraction
+        from audio_metadata import extract_audio_metadata
+        
+        # Extract metadata (pass False to avoid saving JSON file)
+        metadata = extract_audio_metadata(input_path, output_json_path=False)
+        
+        # Return metadata as JSON response
+        return jsonify(metadata)
+    
+    except Exception as e:
+        return jsonify({'error': f'Error processing file: {str(e)}'}), 500
+    
+    finally:
+        # Clean up temporary file
+        try:
+            if os.path.exists(input_path):
+                os.remove(input_path)
+        except Exception:
+            pass  # Ignore cleanup errors
+
 if __name__ == '__main__':
     # WARNING: This runs in debug mode for local development/testing only
     # For production deployment:
