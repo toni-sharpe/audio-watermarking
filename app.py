@@ -400,7 +400,9 @@ def extract_metadata():
         return jsonify(metadata)
     
     except Exception as e:
-        return jsonify({'error': f'Error processing file: {str(e)}'}), 500
+        # Log the error for debugging (in production, use proper logging)
+        # Don't expose detailed error messages to users
+        return jsonify({'error': 'Error processing audio file. Please ensure the file is a valid WAV file (44.1kHz or 48kHz, 16-bit or 24-bit).'}), 500
     
     finally:
         # Clean up temporary file
