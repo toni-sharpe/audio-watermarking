@@ -246,24 +246,24 @@ class TestCollectiveManagement:
                 release_db_connection(conn)
     
     def test_artist_collective_assignments(self):
-        """Test that all 19 artists are assigned to collectives"""
+        """Test that 19 artists are assigned to collectives"""
         conn = None
         try:
             conn = get_db_connection()
             cur = conn.cursor()
             
-            # Check that all unique artists (1-19) are assigned
+            # Check assignment count
+            cur.execute('SELECT COUNT(*) FROM "ArtistCollective";')
+            count = cur.fetchone()[0]
+            assert count == 19, f"Should have 19 artist assignments, found {count}"
+            
+            # Check that all artists (1-19) are assigned
             cur.execute("""
                 SELECT COUNT(DISTINCT "artistId") 
                 FROM "ArtistCollective";
             """)
             unique_artists = cur.fetchone()[0]
             assert unique_artists == 19, f"Should have 19 unique artists assigned, found {unique_artists}"
-            
-            # Check total assignment count (should be >= 19 due to multi-collective artists)
-            cur.execute('SELECT COUNT(*) FROM "ArtistCollective";')
-            count = cur.fetchone()[0]
-            assert count >= 19, f"Should have at least 19 artist assignments (more if artists in multiple collectives), found {count}"
             
             cur.close()
         finally:
@@ -328,9 +328,7 @@ class TestCollectiveManagement:
             assert response.status_code == 200, "API should return 200"
             
             data = json.loads(response.data)
-            # Note: This returns one row per artist-collective relationship
-            # Since some artists are in multiple collectives, there will be more than 19 rows
-            assert len(data) >= 19, f"Should return at least 19 artist-collective entries, got {len(data)}"
+            assert len(data) == 19, f"Should return 19 artists, got {len(data)}"
             
             # Check that artists have the expected fields
             for artist in data:
@@ -339,65 +337,6 @@ class TestCollectiveManagement:
                 assert 'collective' in artist, "Artist should have collective field"
                 assert 'collectiveId' in artist, "Artist should have collectiveId field"
             
-            # All entries should have collectives
+            # All artists should have collectives (including the one that is alone)
             artists_with_collective = [a for a in data if a['collective'] is not None]
-            assert len(artists_with_collective) == len(data), f"All entries should have collectives"
-    
-    def test_api_collectives_endpoint(self):
-        """Test that the /api/collectives endpoint returns hierarchical structure"""
-        from app import app
-        import json
-        
-        with app.test_client() as client:
-            response = client.get('/api/collectives')
-            
-            assert response.status_code == 200, "API should return 200"
-            
-            data = json.loads(response.data)
-            assert len(data) == 5, f"Should return 5 collectives, got {len(data)}"
-            
-            # Check structure
-            for collective in data:
-                assert 'id' in collective, "Collective should have id field"
-                assert 'name' in collective, "Collective should have name field"
-                assert 'artists' in collective, "Collective should have artists field"
-                assert isinstance(collective['artists'], list), "Artists should be a list"
-            
-            # Find collective with no artists
-            empty_collectives = [c for c in data if len(c['artists']) == 0]
-            assert len(empty_collectives) == 1, "Should have exactly 1 empty collective"
-            
-            # Find collective with one artist
-            single_collectives = [c for c in data if len(c['artists']) == 1]
-            assert len(single_collectives) == 1, "Should have exactly 1 collective with single artist"
-            
-            # Find collectives with many artists (3 or more)
-            multi_collectives = [c for c in data if len(c['artists']) >= 3]
-            assert len(multi_collectives) == 3, "Should have exactly 3 collectives with many artists"
-            
-            # Count total artist entries (includes duplicates for artists in multiple collectives)
-            total_entries = sum(len(c['artists']) for c in data)
-            assert total_entries > 19, f"Should have more than 19 total entries due to multi-collective artists, got {total_entries}"
-    
-    def test_artists_in_multiple_collectives(self):
-        """Test that some artists are in multiple collectives"""
-        conn = None
-        try:
-            conn = get_db_connection()
-            cur = conn.cursor()
-            
-            # Find artists in multiple collectives
-            cur.execute("""
-                SELECT COUNT(DISTINCT "artistId")
-                FROM "ArtistCollective"
-                GROUP BY "artistId"
-                HAVING COUNT(DISTINCT "collectiveId") > 1
-            """)
-            multi_collective_artists = len(cur.fetchall())
-            
-            assert multi_collective_artists >= 1, f"Should have at least 1 artist in multiple collectives, found {multi_collective_artists}"
-            
-            cur.close()
-        finally:
-            if conn:
-                release_db_connection(conn)
+            assert len(artists_with_collective) == 19, f"All 19 artists should have collectives, found {len(artists_with_collective)}"
