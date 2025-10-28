@@ -126,10 +126,6 @@ function Home() {
                 <Link to="/artists" style={{ color: '#4CAF50', textDecoration: 'none', fontSize: '14px' }}>
                     View Artists Database →
                 </Link>
-                {' | '}
-                <Link to="/llm" style={{ color: '#4CAF50', textDecoration: 'none', fontSize: '14px' }}>
-                    LLM Service →
-                </Link>
             </div>
             
             <div className="info">
