@@ -74,12 +74,12 @@ python app.py
 
 The server should start successfully on `http://localhost:5000`.
 
-## Running Tests
+## Running Tests (Optional)
 
-To verify everything is working correctly, run the test suite:
+To verify everything is working correctly, you can run the test suite. Note that pytest is a development dependency and is not required to run the application:
 
 ```bash
-pip install pytest  # If not already installed
+pip install pytest  # pytest is needed for running tests but not for the application
 pytest -v
 ```
 
