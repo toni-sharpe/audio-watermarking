@@ -6,6 +6,7 @@ import io
 import os
 import tempfile
 from db_config import get_db_connection, release_db_connection
+from audio_metadata import extract_audio_metadata
 
 app = Flask(__name__, static_folder='.')
 CORS(app)  # Enable CORS for React frontend
@@ -367,6 +368,47 @@ def remove_watermark():
                 os.remove(input_path)
             if os.path.exists(output_path):
                 os.remove(output_path)
+        except Exception:
+            pass  # Ignore cleanup errors
+
+@app.route('/api/metadata', methods=['POST'])
+def extract_metadata():
+    """Extract metadata from an audio file"""
+    if 'audio' not in request.files:
+        return jsonify({'error': 'No audio file provided'}), 400
+    
+    file = request.files['audio']
+    
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    
+    if not file.filename.lower().endswith('.wav'):
+        return jsonify({'error': 'Only WAV files are supported'}), 400
+    
+    # Create temporary file
+    input_fd, input_path = tempfile.mkstemp(suffix='.wav')
+    
+    try:
+        # Close file descriptor and save uploaded file
+        os.close(input_fd)
+        file.save(input_path)
+        
+        # Extract metadata (pass False to avoid saving JSON file)
+        metadata = extract_audio_metadata(input_path, output_json_path=False)
+        
+        # Return metadata as JSON response
+        return jsonify(metadata)
+    
+    except Exception as e:
+        # Log the error for debugging (in production, use proper logging)
+        # Don't expose detailed error messages to users
+        return jsonify({'error': 'Error processing audio file. Please ensure the file is a valid WAV file (44.1kHz or 48kHz, 16-bit or 24-bit).'}), 500
+    
+    finally:
+        # Clean up temporary file
+        try:
+            if os.path.exists(input_path):
+                os.remove(input_path)
         except Exception:
             pass  # Ignore cleanup errors
 
