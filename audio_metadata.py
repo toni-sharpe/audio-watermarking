@@ -77,6 +77,7 @@ def extract_audio_metadata(audio_file_path, output_json_path=None):
             "file_path": str(audio_file_path)
         },
         "musical_characteristics": {
+            # Convert tempo to float (tempo can be a NumPy scalar array from librosa.beat.beat_track)
             "tempo_bpm": float(tempo.item()) if hasattr(tempo, 'item') else float(tempo),
             "estimated_key": key_info["key"],
             "key_confidence": float(key_info["confidence"]),

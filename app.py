@@ -6,6 +6,7 @@ import io
 import os
 import tempfile
 from db_config import get_db_connection, release_db_connection
+from audio_metadata import extract_audio_metadata
 
 app = Flask(__name__, static_folder='.')
 CORS(app)  # Enable CORS for React frontend
@@ -391,9 +392,6 @@ def extract_metadata():
         # Close file descriptor and save uploaded file
         os.close(input_fd)
         file.save(input_path)
-        
-        # Import and use metadata extraction
-        from audio_metadata import extract_audio_metadata
         
         # Extract metadata (pass False to avoid saving JSON file)
         metadata = extract_audio_metadata(input_path, output_json_path=False)
