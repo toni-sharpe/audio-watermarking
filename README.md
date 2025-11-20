@@ -12,9 +12,12 @@ A simple web application for adding watermark samples to audio files.
 
 ## Requirements
 
-- Python 3.7+
+- Python 3.9+
 - Flask
 - NumPy
+- librosa (for audio metadata extraction)
+- soundfile
+- psycopg2-binary (for database operations)
 
 ## Installation
 
