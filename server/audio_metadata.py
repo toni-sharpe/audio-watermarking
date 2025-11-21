@@ -19,7 +19,7 @@ def extract_audio_metadata(audio_file_path, output_json_path=None):
     Args:
         audio_file_path: Path to the audio file (WAV format)
         output_json_path: Optional path for the JSON output. 
-                         If None (default), saves to 'audio_metadata.json' in repo root.
+                         If None (default), saves to 'audio_metadata.json' in server/ directory.
                          If False, does not save to file (only returns metadata).
                          If a string path, saves to that location.
         

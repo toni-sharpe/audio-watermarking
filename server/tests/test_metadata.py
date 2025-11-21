@@ -8,6 +8,7 @@ import wave
 import tempfile
 import os
 import json
+from pathlib import Path
 from audio_metadata import (
     extract_audio_metadata,
     analyze_frequency_bands,
@@ -229,15 +230,12 @@ class TestAudioMetadataExtraction:
                 metadata = extract_audio_metadata(audio_path)
                 
                 # Check that default file was created in the server directory (parent of tests/)
-                default_json_path = os.path.join(
-                    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
-                    "audio_metadata.json"
-                )
-                assert os.path.exists(default_json_path), "Default JSON file should be created"
+                default_json_path = Path(__file__).parent.parent / "audio_metadata.json"
+                assert default_json_path.exists(), "Default JSON file should be created"
                 
                 # Clean up the default file
-                if os.path.exists(default_json_path):
-                    os.remove(default_json_path)
+                if default_json_path.exists():
+                    default_json_path.unlink()
                 
             finally:
                 if os.path.exists(audio_path):
