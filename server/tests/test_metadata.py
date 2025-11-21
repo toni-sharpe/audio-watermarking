@@ -228,9 +228,9 @@ class TestAudioMetadataExtraction:
                 # Extract metadata with default path
                 metadata = extract_audio_metadata(audio_path)
                 
-                # Check that default file was created in the repository root
+                # Check that default file was created in the server directory (parent of tests/)
                 default_json_path = os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)), 
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
                     "audio_metadata.json"
                 )
                 assert os.path.exists(default_json_path), "Default JSON file should be created"
