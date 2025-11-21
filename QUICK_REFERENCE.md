@@ -7,13 +7,13 @@
 createdb audio_watermark
 
 # 2. Install dependencies
-pip install -r requirements.txt
+pip install -r server/requirements.txt
 
 # 3. Initialize database with sample data
-python init_db.py
+python server/init_db.py
 
 # 4. Start the application
-python app.py
+python server/app.py
 
 # 5. Access the application
 # Main page: http://127.0.0.1:5000/
@@ -92,13 +92,13 @@ export DB_PASSWORD=postgres
 ## Testing
 
 ```bash
-# Run all tests
-pytest -v
+# Run all tests from repository root
+pytest server/tests -v
 
 # Run specific test files
-pytest test_database.py -v
-pytest test_api.py -v
-pytest test_watermark.py -v
+pytest server/tests/test_database.py -v
+pytest server/tests/test_api.py -v
+pytest server/tests/test_watermark.py -v
 ```
 
 ## Troubleshooting
@@ -109,9 +109,9 @@ pytest test_watermark.py -v
 - Check connection settings in environment variables
 
 **API returns empty array:**
-- Run `python init_db.py` to populate data
+- Run `python server/init_db.py` to populate data
 - Verify data in database: `psql -U postgres -d audio_watermark -c "SELECT COUNT(*) FROM node;"`
 
 **Port already in use:**
-- Change Flask port in `app.py`: `app.run(port=5001)`
+- Change Flask port in `server/app.py`: `app.run(port=5001)`
 - Or kill process using port 5000: `lsof -ti:5000 | xargs kill`

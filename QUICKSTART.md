@@ -4,7 +4,7 @@
 
 1. **Install dependencies** (if not already installed):
    ```bash
-   pip install -r requirements.txt
+   pip install -r server/requirements.txt
    ```
    
    Or on Ubuntu/Debian:
@@ -14,7 +14,7 @@
 
 2. **Start the server**:
    ```bash
-   python app.py
+   python server/app.py
    ```
 
 3. **Open your browser** and navigate to:
