@@ -12,7 +12,6 @@ from audio_metadata import extract_audio_metadata
 STATIC_DIR = os.path.join(os.path.dirname(__file__), 'static')
 
 app = Flask(__name__, static_folder='static')
-CORS(app)  # Enable CORS for React frontend
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB max file size
 
 # Enable CORS for the React frontend running on port 3000
