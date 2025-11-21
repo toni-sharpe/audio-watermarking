@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file, jsonify
+from flask import Flask, request, send_file, send_from_directory, jsonify
 from flask_cors import CORS
 import numpy as np
 import wave
@@ -8,7 +8,10 @@ import tempfile
 from db_config import get_db_connection, release_db_connection
 from audio_metadata import extract_audio_metadata
 
-app = Flask(__name__, static_folder='.')
+# Static root for this server package
+STATIC_DIR = os.path.join(os.path.dirname(__file__), 'static')
+
+app = Flask(__name__, static_folder='static')
 CORS(app)  # Enable CORS for React frontend
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB max file size
 
@@ -19,6 +22,16 @@ CORS(app, resources={
     r"/remove": {"origins": "http://localhost:3000", "expose_headers": ["Content-Disposition"]},
     r"/api/*": {"origins": "http://localhost:3000"}
 })
+
+@app.route('/')
+def index():
+    """Serve the main HTML page"""
+    return send_from_directory(STATIC_DIR, 'index.html')
+
+@app.route('/artists')
+def artists_page():
+    """Serve the artists HTML page"""
+    return send_from_directory(STATIC_DIR, 'artists.html')
 
 # dB values to amplitude conversion
 # Formula: amplitude = 10^(dB/20)
