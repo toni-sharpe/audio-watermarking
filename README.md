@@ -22,9 +22,9 @@ A simple web application for adding watermark samples to audio files.
 ## Installation
 
 1. Clone this repository
-2. Install dependencies:
+2. Install backend dependencies:
    ```bash
-   pip install -r requirements.txt
+   pip install -r server/requirements.txt
    ```
 
 ## Usage
@@ -33,13 +33,15 @@ A simple web application for adding watermark samples to audio files.
 
 1. Start the Flask backend server:
    ```bash
-   python app.py
+   python server/app.py
    ```
    The backend API will run on `http://localhost:5000` and provides the following endpoints:
    - `POST /upload` - Add watermark to audio file
    - `POST /remove` - Remove watermark from audio file
    - `GET /api/nodes` - Retrieve all nodes from database
    - `GET /api/artists` - Retrieve all artists with collective information
+   - `GET /` - Legacy HTML interface (served from `server/static/index.html`)
+   - `GET /artists` - Legacy artists page (served from `server/static/artists.html`)
 
 ### Frontend Application
 
@@ -60,7 +62,7 @@ A simple web application for adding watermark samples to audio files.
 
 ### Legacy HTML Interface
 
-The original HTML interface (index.html, artists.html) is no longer served by the backend. Use the React frontend at `http://localhost:3000` instead.
+The original HTML interface is now served from the backend at `http://localhost:5000/` (main page) and `http://localhost:5000/artists` (artists page). These static files are located in `server/static/`.
 
 ## How it Works
 
